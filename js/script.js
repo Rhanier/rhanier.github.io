@@ -20,6 +20,8 @@
     iframe.src = url;
     iframe.style.display = 'block';
     placeholder.style.display = 'none';
+    sidebar.classList.add('hidden');
+
   }
   
   function selecionarProjeto(nomeProjeto) {
