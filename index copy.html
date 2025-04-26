@@ -8,18 +8,45 @@
 </head>
 <body>
 
-  <div class="sidebar">
-    <h2>Projetos</h2>
-    <div class="project-list">
-      <div class="project-item" onclick="selecionarProjeto('Projeto Exemplo')">Projeto Exemplo</div>
-      <!-- Duplicar para novos projetos -->
+  <header class="header">
+    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+    <h1 class="header-title">Rhanier - Meus Projetos1</h1>
+  </header>
+
+  <div id="layout" style="display: flex; flex-grow: 1; height: 100%;">
+    <div class="sidebar" id="sidebar">
+      <h2 class="clickable-title" onclick="voltarInicio()">Projetos</h2>
+      <button class="new-project-btn" onclick="novoProjeto()">+ Novo Projeto</button>
+
+      <div class="project-list">
+        <div class="project-folder">
+          <div class="folder-title" onclick="toggleFolder(this)">Websites</div>
+          <div class="folder-content">
+            <div class="project-item" onclick="carregarProjeto('projetos/gas/index.html')">Gas</div>
+            <div class="project-item" onclick="carregarProjeto('projetos/JurosComposto/index.html')">JurosComposto</div>
+            <!-- Mais projetos podem ser adicionados aqui -->
+          </div>
+          <div class="folder-title" onclick="toggleFolder(this)">Python</div>
+          <div class="folder-content">
+            <div class="project-item" onclick="carregarProjeto('projetos/gas/index.html')">Projeto1</div>
+            <div class="project-item" onclick="carregarProjeto('projetos/gas/index.html')">Projeto2</div>
+            <!-- Mais projetos podem ser adicionados aqui -->
+          </div>
+
+        </div>
+        <!-- Duplicar .project-folder para outras categorias -->
+      </div>
+    </div>
+
+    <div class="main-content" id="main-content">
+      <iframe id="projeto-frame" src="" style="width: 100%; height: 100%; border: none; display: none;"></iframe>
+      <h1 id="placeholder-text">Selecione um projeto para visualizar</h1>
+    
     </div>
   </div>
 
-  <div class="main-content" id="main-content">
-    <h1>Selecione um projeto para visualizar</h1>
-  </div>
-
   <script src="js/script.js"></script>
+
+
 </body>
 </html>

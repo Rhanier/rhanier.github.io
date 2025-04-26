@@ -1,59 +1,23 @@
+function calcularJurosCompostos() {
+  const valorInicial = parseFloat(document.getElementById('valorInicial').value);
+  const taxaJuros = parseFloat(document.getElementById('taxaJuros').value) / 100;
+  const qtdMeses = parseInt(document.getElementById('qtdMeses').value);
+  const resultadoDiv = document.getElementById('resultadoCompostos');
 
-'use strict';
-console.log("1_Gaso")
+  const montante = valorInicial * Math.pow(1 + taxaJuros, qtdMeses);
 
-// adiciona carro
-let carro1nome = "Fit"
-let kmlGas = 16
-let carro1Et = 13
+  resultadoDiv.textContent = `Montante após ${qtdMeses} meses: R$ ${montante.toFixed(2)}`;
+  resultadoDiv.style.display = 'block';
+}
 
-let carro1 = {}
+function calcularJurosSimples() {
+  const valorInicial = parseFloat(document.getElementById('valorInicialSimples').value);
+  const taxaJuros = parseFloat(document.getElementById('taxaJurosSimples').value) / 100;
+  const qtdMeses = parseInt(document.getElementById('qtdMesesSimples').value);
+  const resultadoDiv = document.getElementById('resultadoSimples');
 
-carro1.model = carro1nome
-carro1.gas = kmlGas
-carro1.et = carro1Et
+  const montante = valorInicial * (1 + (taxaJuros * qtdMeses));
 
-document.querySelector('.inputcarro').value = carro1.model
-document.querySelector('.inputkmlgas').value = carro1.gas
-document.querySelector('.inputkmleta').value = carro1.et
-
-document.querySelector('.inputprecogas').value = 6
-document.querySelector('.inputprecoeta').value = 4
-
-function calcular() {
-    const kmlGas = parseFloat(document.querySelector('.inputkmlgas').value);
-    const kmlEta = parseFloat(document.querySelector('.inputkmleta').value);
-    const precoGas = parseFloat(document.querySelector('.inputprecogas').value);
-    const precoEta = parseFloat(document.querySelector('.inputprecoeta').value);
-    const resultadoDiv = document.getElementById('resultado');
-
-    if (isNaN(kmlGas) || isNaN(kmlEta) || isNaN(precoGas) || isNaN(precoEta)) {
-      resultadoDiv.textContent = 'Por favor, preencha todos os campos corretamente.';
-      resultadoDiv.className = 'resultado erro';
-      resultadoDiv.style.display = 'block';
-      return;
-    }
-
-    const custoGas = precoGas / kmlGas;
-    const custoEta = precoEta / kmlEta;
-
-    let precoG = custoEta - custoGas
-    let precoE = custoGas - custoEta
-
-
-    if (custoGas < custoEta) {
-      resultadoDiv.textContent = 'Gasolina é mais vantajosa! ' + precoG.toFixed(2) + ' reais mais barato';
-      resultadoDiv.className = 'resultado sucesso';
-    } 
-    
-    else if (custoEta < custoGas) {
-        resultadoDiv.textContent = 'Etanol é  mais vantajoso!  ' + precoE.toFixed(2) + ' reais mais barato';
-        resultadoDiv.className = 'resultado sucesso';
-        }
-    else {
-        resultadoDiv.textContent = 'Mesmo Preço! Pode escolher qualquer um!';
-        resultadoDiv.className = 'resultado sucesso';
-
-    }
-    resultadoDiv.style.display = 'block';
-  }
+  resultadoDiv.textContent = `Montante após ${qtdMeses} meses: R$ ${montante.toFixed(2)}`;
+  resultadoDiv.style.display = 'block';
+}
