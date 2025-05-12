@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análise Financeira</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="../../css/styles.css">
+  <link rel="stylesheet" href="css/styles.css">
+
+</head>
+<body>
+    <div class="container">
+        <h1>Análise Financeira - Receitas Fixas</h1>
+        <canvas id="graficoReceitas"></canvas>
+    </div>
+
+    <script>
+        const dados = {
+            meses: ["Fev/24", "Mar/24", "Abr/24", "Mai/24", "Jun/24", "Jul/24", "Ago/24", "Set/24", "Out/24", "Nov/24", "Dez/24", "Jan/25", "Fev/25", "Mar/25", "Abr/25", "Mai/25", "Jun/25", "Jul/25", "Ago/25", "Set/25", "Out/25"],
+            receitas: {
+                "Salário Dia 15": [0, 5200, 5200, 5426, 5616, 5616, 5616, 5616, 5616, 5616, 5616, 5616, 5616, 5616, 5616, 5616, 0, 0, 0, 0, 0],
+                "Salário Dia 30": [0, 7329, 8419, 7126, 7636, 7726, 8530, 8986, 7412, 12345, 17199, 4714, 4714, 4714, 4714, 4714, 0, 0, 0, 0, 0],
+                "Rendimento": [0, 0, 0, 0, 0, 3150, 0, 0, 0, 1130, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                "Itaipu": [0, 0, 0, 0, 0, 1038, 1038, 1038, 1038, 1038, 1038, 1038, 1038, 1038, 0, 0, 0, 0, 0, 0, 0],
+                "Welcome": [0, 0, 0, 0, 0, 2578, 0, 0, 0, 2578, 2578, 2578, 2578, 2578, 0, 0, 0, 0, 0, 0, 0]
+            }
+        };
+
+        const ctx = document.getElementById('graficoReceitas').getContext('2d');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dados.meses,
+                datasets: Object.keys(dados.receitas).map((key, idx) => ({
+                    label: key,
+                    data: dados.receitas[key],
+                    borderColor: `hsl(${idx * 60}, 70%, 50%)`,
+                    backgroundColor: `hsl(${idx * 60}, 70%, 50%, 0.2)`,
+                    fill: true,
+                    tension: 0.1
+                }))
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
