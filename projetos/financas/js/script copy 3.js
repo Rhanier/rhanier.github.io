@@ -7,54 +7,9 @@
       }).replace('.', '');
     }
 
-let chartGeral;
-let dadosReceitaGeral = [];
-let dadosDebitoGeral = [];
-let labelsGeral = [];
-
-let mesesSelecionados = []; // manterá os meses escolhidos pelo usuário
-
-function normalizarTexto(texto) {
-  return texto?.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-}
-
-function criarCheckboxMeses(labels) {
-  const container = document.getElementById('filtroMeses');
-  container.innerHTML = ''; // limpar antes de recriar
-
-  labels.forEach((label, i) => {
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.value = i;
-    checkbox.checked = true; // marcar todos por padrão
-    checkbox.onchange = () => atualizarGraficoGeral(); // atualiza ao mudar
-
-    const labelTag = document.createElement('label');
-    labelTag.appendChild(checkbox);
-    labelTag.appendChild(document.createTextNode(` ${label}`));
-
-    container.appendChild(labelTag);
-  });
-
-  // Preenche inicialmente com todos selecionados
-  mesesSelecionados = labels.map((_, i) => i);
-}
-
-function criarBotoesGraficoGeral() {
-  const container = document.getElementById('filtroGeral');
-  const opcoes = ['Todos', 'Receitas', 'Débitos'];
-
-  opcoes.forEach(opcao => {
-    const btn = document.createElement('button');
-    btn.textContent = opcao;
-    btn.onclick = () => atualizarGraficoGeral(opcao.toLowerCase());
-    container.appendChild(btn);
-  });
-}
-
-
 async function carregarGraficoGeral() {
   const url = 'https://docs.google.com/spreadsheets/d/16IHVI9UkXfu-WE7fzLNcEMGY6Df3BXBa/export?format=xlsx';
+
   const response = await fetch(url);
   const arrayBuffer = await response.arrayBuffer();
   const workbook = XLSX.read(arrayBuffer, { type: "array" });
@@ -67,11 +22,10 @@ async function carregarGraficoGeral() {
   const linhas = jsonCompleto.slice(1);
 
   const rawHeaders = cabecalho.slice(4);
-  labelsGeral = rawHeaders.map(cell => typeof cell === 'number' ? excelDateToMonthYear(cell) : cell);
-criarCheckboxMeses(labelsGeral);
+  const labels = rawHeaders.map(cell => typeof cell === 'number' ? excelDateToMonthYear(cell) : cell);
 
-  dadosReceitaGeral = new Array(labelsGeral.length).fill(0);
-  dadosDebitoGeral = new Array(labelsGeral.length).fill(0);
+  const receitas = new Array(labels.length).fill(0);
+  const debitos = new Array(labels.length).fill(0);
 
   for (let i = 0; i < linhas.length; i++) {
     const linha = linhas[i];
@@ -80,63 +34,44 @@ criarCheckboxMeses(labelsGeral);
     for (let j = 4; j < cabecalho.length; j++) {
       const valor = parseFloat(linha[j]);
       if (!isNaN(valor)) {
-        if (tipo && normalizarTexto(tipo).includes('receita')) {
-          dadosReceitaGeral[j - 4] += valor;
-        } else if (tipo && normalizarTexto(tipo).includes('debito')) {
-          dadosDebitoGeral[j - 4] += valor;
+        if (tipo && tipo.toLowerCase().includes('receita')) {
+          receitas[j - 4] += valor;
+        } else if (tipo && tipo.toLowerCase().includes('débito')) {
+          debitos[j - 4] += valor;
         }
       }
     }
   }
 
-  criarBotoesGraficoGeral();
-  atualizarGraficoGeral("todos");
-}
-
-function atualizarGraficoGeral(filtro = "todos") {
-  // Atualiza os meses selecionados
-  const checkboxes = document.querySelectorAll('#filtroMeses input[type="checkbox"]');
-  mesesSelecionados = Array.from(checkboxes)
-    .filter(cb => cb.checked)
-    .map(cb => parseInt(cb.value));
-
   const ctx = document.getElementById('myChart').getContext('2d');
-  if (chartGeral) chartGeral.destroy();
-
-  const datasets = [];
-
-  if (filtro === "todos" || filtro === "receitas") {
-    datasets.push({
-      label: 'Receitas',
-      data: mesesSelecionados.map(i => dadosReceitaGeral[i]),
-      backgroundColor: 'rgba(75, 192, 192, 0.6)'
-    });
-  }
-
-  if (filtro === "todos" || filtro === "débitos" || filtro === "debitos") {
-    datasets.push({
-      label: 'Débitos',
-      data: mesesSelecionados.map(i => dadosDebitoGeral[i]),
-      backgroundColor: 'rgba(255, 99, 132, 0.6)'
-    });
-  }
-
-  const labelsFiltradas = mesesSelecionados.map(i => labelsGeral[i]);
-
-  chartGeral = new Chart(ctx, {
+  new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: labelsFiltradas,
-      datasets: datasets
+      labels: labels,
+      datasets: [
+        {
+          label: 'Receitas',
+          data: receitas,
+          backgroundColor: 'rgba(75, 192, 192, 0.6)'
+        },
+        {
+          label: 'Débitos',
+          data: debitos,
+          backgroundColor: 'rgba(255, 99, 132, 0.6)'
+        }
+      ]
     },
     options: {
       responsive: true,
       scales: {
-        y: { beginAtZero: true }
+        y: {
+          beginAtZero: true
+        }
       }
     }
   });
 }
+
 
     let dadosBrutos = [];
     let labels = [];

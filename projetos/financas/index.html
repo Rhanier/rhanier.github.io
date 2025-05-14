@@ -2,21 +2,31 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Gráfico Financeiro</title>
-    <link rel="stylesheet" href="../../css/styles.css">
+  <title>Gráficos com Filtros</title>
     <link rel="stylesheet" href="css/styles.css">
+    <!-- <link rel="stylesheet" href="../../css/styles.css"> -->
+
+
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 </head>
 <body>
-  <h2>Receitas/Despesas por Mês</h2>
+  <h2>Receitas por Mês</h2>
+  <div class="filtros" id="filtrosReceita"></div>
+  <canvas id="chartReceitas" width="600" height="400"></canvas>
+
+  <h2>Débitos por Mês</h2>
+  <div class="filtros" id="filtrosDebito"></div>
+  <canvas id="chartDebitos" width="600" height="400"></canvas>
+
+<h2>Gráfico Geral: Receitas e Débitos</h2>
+<div id="filtroMeses"></div>
+
+<div class="filtros" id="filtroGeral"></div>
   <canvas id="myChart" width="600" height="400"></canvas>
 
     <script src="js/script.js"></script>
 
-  <script>
-    
-  </script>
 </body>
 </html>
