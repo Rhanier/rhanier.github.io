@@ -1,40 +1,22 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html>
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Projeto Gas</title>
-  <link rel="stylesheet" href="../../css/styles.css">
-  <link rel="stylesheet" href="css/styles.css">
-
-  <style>
- 
-  </style>
+  <title>Gráfico Financeiro</title>
+    <link rel="stylesheet" href="../../css/styles.css">
+    <link rel="stylesheet" href="css/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body style="min-height: 100vh; overflow-y: auto; padding: 20px; background: #f7f7f7;">
+<body>
+  <h2>Receitas/Despesas por Mês</h2>
+  <canvas id="myChart" width="600" height="400"></canvas>
 
-  <button onclick="window.open('http://localhost:5000/analise', '_blank')">
-  📊 Ver Análise Financeira
-</button>
+    <script src="js/script.js"></script>
 
-  <form class="form-container" onsubmit="event.preventDefault(); calcular();">
-    <label for="inputcarro">Financas</label>
-    <input id="inputcarro" class="inputcarro" type="text"  >
-    <label for="inputkmlgas">Quantos Km por litro com Gasolina:</label>
-    <input id="inputkmlgas" class="inputkmlgas" type="number" placeholder="Km/l com Gasolina" required>
-    <label for="inputkmleta">Quantos Km por litro com Etanol:</label>
-    <input id="inputkmleta" class="inputkmleta" type="number" placeholder="Km/l com Etanol" required>
-    <label for="inputprecogas">Preço da Gasolina:</label>
-    <input id="inputprecogas" class="inputprecogas" type="number" step="0.01" placeholder="Preço da Gasolina" required>
-    <label for="inputprecoeta">Preço do Etanol:</label>
-    <input id="inputprecoeta" class="inputprecoeta" type="number" step="0.01" placeholder="Preço do Etanol" required>
-
-    <button class="btncalc" type="submit">Calcular</button>
-
-    <div id="resultado" class="resultado"></div>
-  </form>
-
-  <script src="js/script.js"></script>
-
+  <script>
+    
+  </script>
 </body>
 </html>

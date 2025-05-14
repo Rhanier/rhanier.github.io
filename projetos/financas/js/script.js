@@ -1,59 +1,69 @@
+async function carregarPlanilha() {
+      const url = 'https://docs.google.com/spreadsheets/d/16IHVI9UkXfu-WE7fzLNcEMGY6Df3BXBa/export?format=xlsx';
 
-'use strict';
-console.log("1_Gaso")
+      const response = await fetch(url);
+      const arrayBuffer = await response.arrayBuffer();
+      const workbook = XLSX.read(arrayBuffer, { type: "array" });
 
-// adiciona carro
-let carro1nome = "Fit"
-let kmlGas = 16
-let carro1Et = 13
+      const aba = "Página2"; // Nome da aba exata
+      const sheet = workbook.Sheets[aba];
+      const jsonCompleto = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-let carro1 = {}
+      // jsonCompleto é uma matriz de arrays, onde cada linha é um array de células
+      const cabecalho = jsonCompleto[0];
+      const linhas = jsonCompleto.slice(1);
 
-carro1.model = carro1nome
-carro1.gas = kmlGas
-carro1.et = carro1Et
+    //  const labels = cabecalho.slice(4); // Colunas E em diante = meses
+   function excelDateToMonthName(serial) {
+  const excelEpoch = new Date(1899, 11, 30); // base do Excel
+  const date = new Date(excelEpoch.getTime() + serial * 86400000);
+  return date.toLocaleDateString('pt-BR', { month: 'short' , year: 'numeric' }).replace('. de ', '/');;
+}
 
-document.querySelector('.inputcarro').value = carro1.model
-document.querySelector('.inputkmlgas').value = carro1.gas
-document.querySelector('.inputkmleta').value = carro1.et
+const rawHeaders = cabecalho.slice(4);
 
-document.querySelector('.inputprecogas').value = 6
-document.querySelector('.inputprecoeta').value = 4
-
-function calcular() {
-    const kmlGas = parseFloat(document.querySelector('.inputkmlgas').value);
-    const kmlEta = parseFloat(document.querySelector('.inputkmleta').value);
-    const precoGas = parseFloat(document.querySelector('.inputprecogas').value);
-    const precoEta = parseFloat(document.querySelector('.inputprecoeta').value);
-    const resultadoDiv = document.getElementById('resultado');
-
-    if (isNaN(kmlGas) || isNaN(kmlEta) || isNaN(precoGas) || isNaN(precoEta)) {
-      resultadoDiv.textContent = 'Por favor, preencha todos os campos corretamente.';
-      resultadoDiv.className = 'resultado erro';
-      resultadoDiv.style.display = 'block';
-      return;
-    }
-
-    const custoGas = precoGas / kmlGas;
-    const custoEta = precoEta / kmlEta;
-
-    let precoG = custoEta - custoGas
-    let precoE = custoGas - custoEta
-
-
-    if (custoGas < custoEta) {
-      resultadoDiv.textContent = 'Gasolina é mais vantajosa! ' + precoG.toFixed(2) + ' reais mais barato';
-      resultadoDiv.className = 'resultado sucesso';
-    } 
-    
-    else if (custoEta < custoGas) {
-        resultadoDiv.textContent = 'Etanol é  mais vantajoso!  ' + precoE.toFixed(2) + ' reais mais barato';
-        resultadoDiv.className = 'resultado sucesso';
-        }
-    else {
-        resultadoDiv.textContent = 'Mesmo Preço! Pode escolher qualquer um!';
-        resultadoDiv.className = 'resultado sucesso';
-
-    }
-    resultadoDiv.style.display = 'block';
+const labels = rawHeaders.map(cell => {
+  if (typeof cell === 'number') {
+    return excelDateToMonthName(cell);
   }
+  return cell;
+});
+
+    const valores = new Array(labels.length).fill(0);
+
+      // Somar valores de cada coluna de mês
+      for (let i = 0; i < linhas.length; i++) {
+        for (let j = 4; j < cabecalho.length; j++) {
+          const valor = parseFloat(linhas[i][j]);
+          if (!isNaN(valor)) {
+            valores[j - 4] += valor;
+          }
+        }
+      }
+
+      console.log("Labels (Meses):", labels);
+      console.log("Valores somados:", valores);
+
+      const ctx = document.getElementById('myChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Total por mês',
+            data: valores,
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
+
+    carregarPlanilha();
