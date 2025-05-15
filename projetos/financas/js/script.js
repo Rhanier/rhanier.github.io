@@ -18,6 +18,29 @@ function normalizarTexto(texto) {
   return texto?.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
+function criarSeletorDeIntervalo(labels) {
+  const selectInicio = document.getElementById('mesInicio');
+  const selectFim = document.getElementById('mesFim');
+
+  // Resetar os selects
+  selectInicio.innerHTML = '';
+  selectFim.innerHTML = '';
+
+  labels.forEach((label, i) => {
+    const option1 = new Option(label, i);
+    const option2 = new Option(label, i);
+    selectInicio.appendChild(option1);
+    selectFim.appendChild(option2);
+  });
+
+  // Valores padrão (início = 0, fim = último)
+  selectInicio.value = 0;
+  selectFim.value = labels.length - 1;
+
+  selectInicio.onchange = () => atualizarGraficoGeral();
+  selectFim.onchange = () => atualizarGraficoGeral();
+}
+
 function criarCheckboxMeses(labels) {
   const container = document.getElementById('filtroMeses');
   container.innerHTML = ''; // limpar antes de recriar
@@ -68,8 +91,8 @@ async function carregarGraficoGeral() {
 
   const rawHeaders = cabecalho.slice(4);
   labelsGeral = rawHeaders.map(cell => typeof cell === 'number' ? excelDateToMonthYear(cell) : cell);
-criarCheckboxMeses(labelsGeral);
-
+// criarCheckboxMeses(labelsGeral);
+criarSeletorDeIntervalo(labelsGeral);
   dadosReceitaGeral = new Array(labelsGeral.length).fill(0);
   dadosDebitoGeral = new Array(labelsGeral.length).fill(0);
 
@@ -94,37 +117,61 @@ criarCheckboxMeses(labelsGeral);
 }
 
 function atualizarGraficoGeral(filtro = "todos") {
-  // Atualiza os meses selecionados
-  const checkboxes = document.querySelectorAll('#filtroMeses input[type="checkbox"]');
-  mesesSelecionados = Array.from(checkboxes)
-    .filter(cb => cb.checked)
-    .map(cb => parseInt(cb.value));
+  const inicio = parseInt(document.getElementById('mesInicio').value);
+  const fim = parseInt(document.getElementById('mesFim').value);
+
+  if (inicio > fim) return;
+
+  const mesesSelecionados = [];
+  for (let i = inicio; i <= fim; i++) {
+    mesesSelecionados.push(i);
+  }
 
   const ctx = document.getElementById('myChart').getContext('2d');
   if (chartGeral) chartGeral.destroy();
 
   const datasets = [];
 
+  const receitaData = mesesSelecionados.map(i => dadosReceitaGeral[i]);
+  const debitoData = mesesSelecionados.map(i => dadosDebitoGeral[i]);
+  const diferencaData = receitaData.map((val, idx) => val - debitoData[idx]);
+
   if (filtro === "todos" || filtro === "receitas") {
     datasets.push({
       label: 'Receitas',
-      data: mesesSelecionados.map(i => dadosReceitaGeral[i]),
-      backgroundColor: 'rgba(75, 192, 192, 0.6)'
+      data: receitaData,
+      backgroundColor: 'rgba(75, 192, 192, 0.6)',
+      type: 'bar'
     });
   }
 
   if (filtro === "todos" || filtro === "débitos" || filtro === "debitos") {
     datasets.push({
       label: 'Débitos',
-      data: mesesSelecionados.map(i => dadosDebitoGeral[i]),
-      backgroundColor: 'rgba(255, 99, 132, 0.6)'
+      data: debitoData,
+      backgroundColor: 'rgba(255, 99, 132, 0.6)',
+      type: 'bar'
+    });
+  }
+
+  // Nova linha: diferença
+  if (filtro === "todos") {
+    datasets.push({
+      label: 'Diferença (Receita - Débito)',
+      data: diferencaData,
+      borderColor: 'rgba(54, 162, 235, 1)',
+      backgroundColor: 'transparent',
+      borderWidth: 2,
+      type: 'line',
+      tension: 0.3,
+      pointRadius: 3,
+      pointBackgroundColor: 'rgba(54, 162, 235, 1)'
     });
   }
 
   const labelsFiltradas = mesesSelecionados.map(i => labelsGeral[i]);
 
   chartGeral = new Chart(ctx, {
-    type: 'bar',
     data: {
       labels: labelsFiltradas,
       datasets: datasets
@@ -137,6 +184,7 @@ function atualizarGraficoGeral(filtro = "todos") {
     }
   });
 }
+
 
     let dadosBrutos = [];
     let labels = [];

@@ -12,19 +12,33 @@
 
 </head>
 <body>
-  <h2>Receitas por Mês</h2>
-  <div class="filtros" id="filtrosReceita"></div>
-  <canvas id="chartReceitas" width="600" height="400"></canvas>
+<div class="graficos-lado-a-lado">
+  <div class="grafico-box">
+    <h2>Receitas por Mês</h2>
+    <div class="filtros" id="filtrosReceita"></div>
+    <canvas id="chartReceitas"></canvas>
+  </div>
 
-  <h2>Débitos por Mês</h2>
-  <div class="filtros" id="filtrosDebito"></div>
-  <canvas id="chartDebitos" width="600" height="400"></canvas>
+  <div class="grafico-box">
+    <h2>Débitos por Mês</h2>
+    <div class="filtros" id="filtrosDebito"></div>
+    <canvas id="chartDebitos"></canvas>
+  </div>
+</div>
 
+
+<div class="grafico-box-centralizado">
 <h2>Gráfico Geral: Receitas e Débitos</h2>
-<div id="filtroMeses"></div>
+<div id="filtroMeses">
+  <label for="mesInicio">De:</label>
+  <select id="mesInicio"></select>
 
+  <label for="mesFim">Até:</label>
+  <select id="mesFim"></select>
+</div>
 <div class="filtros" id="filtroGeral"></div>
-  <canvas id="myChart" width="600" height="400"></canvas>
+<canvas id="myChart" width="600" height="400"></canvas>
+</div>
 
     <script src="js/script.js"></script>
 

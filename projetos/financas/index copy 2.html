@@ -1,69 +1,39 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html>
 <head>
   <meta charset="UTF-8">
-  <title>Gráfico da Planilha - Página2</title>
-  <!-- Inclusão das bibliotecas -->
+  <title>Gráficos com Filtros</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- <link rel="stylesheet" href="../../css/styles.css"> -->
+
+
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 </head>
 <body>
-  <h2>Gráfico gerado a partir da aba "Página2"</h2>
-  <canvas id="meuGrafico" width="600" height="400"></canvas>
+  <h2>Receitas por Mês</h2>
+  <div class="filtros" id="filtrosReceita"></div>
+  <div class="container">
+  <canvas id="chartReceitas" width="600" height="400"></canvas>
+  </div>
 
-  <script>
-    async function carregarPlanilha() {
-      const url = 'https://docs.google.com/spreadsheets/d/16IHVI9UkXfu-WE7fzLNcEMGY6Df3BXBa/export?format=xlsx';
+  <h2>Débitos por Mês</h2>
+  <div class="filtros" id="filtrosDebito"></div>
+  <canvas id="chartDebitos" width="600" height="400"></canvas>
 
-      try {
-        const response = await fetch(url);
-        const arrayBuffer = await response.arrayBuffer();
-        const workbook = XLSX.read(arrayBuffer, { type: "array" });
+<h2>Gráfico Geral: Receitas e Débitos</h2>
+<div id="filtroMeses">
+  <label for="mesInicio">De:</label>
+  <select id="mesInicio"></select>
 
-        // Verifica se a aba "Página2" existe
-        const nomeAba = "Página2";
-        if (!workbook.SheetNames.includes(nomeAba)) {
-          throw new Error(`A aba "${nomeAba}" não foi encontrada na planilha.`);
-        }
+  <label for="mesFim">Até:</label>
+  <select id="mesFim"></select>
+</div>
+<div class="filtros" id="filtroGeral"></div>
+<canvas id="myChart" width="600" height="400"></canvas>
 
-        const aba = workbook.Sheets[nomeAba];
-        const dados = XLSX.utils.sheet_to_json(aba);
+    <script src="js/script.js"></script>
 
-        // Ajuste os nomes das colunas conforme sua planilha
-        const labels = dados.map(linha => linha.Mês || linha.Mes || linha.Meses || 'SemNome');
-        const valores = dados.map(linha => linha.Valor || linha.Total || linha.Vendas || 0);
-console.log("JSON da planilha:", labels); // 👈 Aqui você verá o conteúdo
-
-        // Criação do gráfico
-        const ctx = document.getElementById('meuGrafico').getContext('2d');
-        new Chart(ctx, {
-          type: 'bar',
-          data: {
-            labels: labels,
-            datasets: [{
-              label: 'Valores da Página2',
-              data: valores,
-              backgroundColor: 'rgba(54, 162, 235, 0.5)',
-              borderColor: 'rgba(54, 162, 235, 1)',
-              borderWidth: 1
-            }]
-          },
-          options: {
-            responsive: true,
-            scales: {
-              y: {
-                beginAtZero: true
-              }
-            }
-          }
-        });
-
-      } catch (erro) {
-        console.error("Erro ao carregar a planilha:", erro);
-      }
-    }
-
-    carregarPlanilha();
-  </script>
 </body>
 </html>
