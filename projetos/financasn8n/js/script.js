@@ -1,3 +1,8 @@
+// =========================
+// 🔧 Utilitários
+// =========================
+
+// Converte objeto Date para "mai 2025"
 function excelDateToMonthYear(dateObj) {
   return dateObj.toLocaleDateString('pt-BR', {
     month: 'short',
@@ -5,14 +10,16 @@ function excelDateToMonthYear(dateObj) {
   }).replace('.', '');
 }
 
-let dadosBrutos = [];
-let labels = [];
+// Normaliza texto para comparação
+function normalizarTexto(texto) {
+  return texto?.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
 
-let chartReceitas, chartDebitos, chartGeral;
+// =========================
+// 📅 Controles de filtro
+// =========================
 
-let dadosReceitaGeral = [];
-let dadosDebitoGeral = [];
-
+// Cria os seletores de intervalo de meses (De / Até)
 function criarSeletorDeIntervalo(labels) {
   const selectInicio = document.getElementById('mesInicio');
   const selectFim = document.getElementById('mesFim');
@@ -21,10 +28,8 @@ function criarSeletorDeIntervalo(labels) {
   selectFim.innerHTML = '';
 
   labels.forEach((label, i) => {
-    const option1 = new Option(label, i);
-    const option2 = new Option(label, i);
-    selectInicio.appendChild(option1);
-    selectFim.appendChild(option2);
+    selectInicio.appendChild(new Option(label, i));
+    selectFim.appendChild(new Option(label, i));
   });
 
   selectInicio.value = 0;
@@ -34,13 +39,12 @@ function criarSeletorDeIntervalo(labels) {
   selectFim.onchange = () => atualizarGraficoGeral();
 }
 
+// Cria botões "Todos / Receitas / Débitos" para o gráfico geral
 function criarBotoesGraficoGeral() {
   const container = document.getElementById('filtroGeral');
   container.innerHTML = '';
 
-  const opcoes = ['Todos', 'Receitas', 'Débitos'];
-
-  opcoes.forEach(opcao => {
+  ['Todos', 'Receitas', 'Débitos'].forEach(opcao => {
     const btn = document.createElement('button');
     btn.textContent = opcao;
     btn.onclick = () => atualizarGraficoGeral(opcao.toLowerCase());
@@ -48,52 +52,11 @@ function criarBotoesGraficoGeral() {
   });
 }
 
-function normalizarTexto(texto) {
-  return texto?.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-}
-
-async function carregarPlanilha() {
-  const url = 'https://docs.google.com/spreadsheets/d/1o0QvqWtjUrA20h3t_xo7pwbNAqkLLcnBBZMf0LfAI6o/export?format=xlsx';
-  const response = await fetch(url);
-  const arrayBuffer = await response.arrayBuffer();
-  const workbook = XLSX.read(arrayBuffer, { type: "array" });
-
-  const aba = "Página1";
-  const sheet = workbook.Sheets[aba];
-  const json = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-
-  const linhas = json.slice(1);
-
-  dadosBrutos = linhas.map(l => ({
-    tipo: l[2],
-    categoria: l[3],
-    data: new Date(l[4]),
-    valor: parseFloat(l[5])
-  })).filter(l => !isNaN(l.valor) && !isNaN(l.data));
-
-  const mesesSet = new Set();
-  dadosBrutos.forEach(item => {
-    const mesAno = excelDateToMonthYear(item.data);
-    mesesSet.add(mesAno);
-  });
-  labels = Array.from(mesesSet).sort((a, b) => new Date('01 ' + a) - new Date('01 ' + b));
-
-  const categoriasReceita = [...new Set(dadosBrutos.filter(d => d.tipo?.toLowerCase().includes('receita')).map(d => d.categoria))];
-  const categoriasDebito = [...new Set(dadosBrutos.filter(d => d.tipo?.toLowerCase().includes('debito')).map(d => d.categoria))];
-
-  criarBotoes('filtrosReceita', categoriasReceita, atualizarGraficoReceita);
-  criarBotoes('filtrosDebito', categoriasDebito, atualizarGraficoDebito);
-
-  atualizarGraficoReceita();
-  atualizarGraficoDebito();
-  criarSeletorDeIntervalo(labels);
-  criarBotoesGraficoGeral();
-  atualizarGraficoGeral("todos");
-}
-
+// Cria botões por categoria
 function criarBotoes(containerId, categorias, callback) {
   const container = document.getElementById(containerId);
   container.innerHTML = '';
+
   const todos = document.createElement('button');
   todos.textContent = 'Todos';
   todos.onclick = () => callback();
@@ -107,6 +70,72 @@ function criarBotoes(containerId, categorias, callback) {
   });
 }
 
+// =========================
+// 📦 Variáveis globais
+// =========================
+
+let dadosBrutos = [];
+let labels = [];
+
+let chartReceitas, chartDebitos, chartGeral;
+let dadosReceitaGeral = [];
+let dadosDebitoGeral = [];
+
+// =========================
+// 📥 Carregamento e preparo dos dados
+// =========================
+
+async function carregarPlanilha() {
+  const url = 'https://docs.google.com/spreadsheets/d/1o0QvqWtjUrA20h3t_xo7pwbNAqkLLcnBBZMf0LfAI6o/export?format=xlsx';
+  const response = await fetch(url);
+  const arrayBuffer = await response.arrayBuffer();
+  const workbook = XLSX.read(arrayBuffer, { type: "array" });
+
+  const aba = "Página1";
+  const sheet = workbook.Sheets[aba];
+  const json = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+  const linhas = json.slice(1);
+
+  // Converte cada linha em objeto estruturado
+  dadosBrutos = linhas.map(l => {
+    const tipo = l[2];
+    const categoria = l[3];
+    const dataBruta = l[4];
+    const valor = parseFloat(l[5]);
+
+    const data = !isNaN(dataBruta)
+      ? new Date(Date.UTC(1899, 11, 30) + dataBruta * 86400000)
+      : null;
+
+    return { tipo, categoria, data, valor };
+  }).filter(l => !isNaN(l.valor) && l.data instanceof Date && !isNaN(l.data));
+
+  // Gera lista de meses únicos ordenados
+  const mesesSet = new Set();
+  dadosBrutos.forEach(item => mesesSet.add(excelDateToMonthYear(item.data)));
+  labels = Array.from(mesesSet).sort((a, b) => new Date('01 ' + a) - new Date('01 ' + b));
+
+  // Categorias únicas
+  const categoriasReceita = [...new Set(dadosBrutos.filter(d => d.tipo?.toLowerCase().includes('receita')).map(d => d.categoria))];
+  const categoriasDebito = [...new Set(dadosBrutos.filter(d => d.tipo?.toLowerCase().includes('debito')).map(d => d.categoria))];
+
+  // Inicialização de UI
+  criarBotoes('filtrosReceita', categoriasReceita, atualizarGraficoReceita);
+  criarBotoes('filtrosDebito', categoriasDebito, atualizarGraficoDebito);
+  criarSeletorDeIntervalo(labels);
+  criarBotoesGraficoGeral();
+
+  // Primeiros gráficos
+  atualizarGraficoReceita();
+  atualizarGraficoDebito();
+  atualizarGraficoGeral("todos");
+}
+
+// =========================
+// 📊 Gráficos
+// =========================
+
+// Gráfico de Receitas
 function atualizarGraficoReceita(filtro = null) {
   const dados = new Array(labels.length).fill(0);
 
@@ -122,6 +151,7 @@ function atualizarGraficoReceita(filtro = null) {
 
   const ctx = document.getElementById('chartReceitas').getContext('2d');
   if (chartReceitas) chartReceitas.destroy();
+
   chartReceitas = new Chart(ctx, {
     type: 'bar',
     data: {
@@ -136,6 +166,7 @@ function atualizarGraficoReceita(filtro = null) {
   });
 }
 
+// Gráfico de Débitos
 function atualizarGraficoDebito(filtro = null) {
   const dados = new Array(labels.length).fill(0);
 
@@ -151,6 +182,7 @@ function atualizarGraficoDebito(filtro = null) {
 
   const ctx = document.getElementById('chartDebitos').getContext('2d');
   if (chartDebitos) chartDebitos.destroy();
+
   chartDebitos = new Chart(ctx, {
     type: 'bar',
     data: {
@@ -165,10 +197,13 @@ function atualizarGraficoDebito(filtro = null) {
   });
 }
 
+// Gráfico Geral (Receitas, Débitos, Diferença)
 function atualizarGraficoGeral(filtro = "todos") {
+  // Inicializa arrays
   dadosReceitaGeral = new Array(labels.length).fill(0);
   dadosDebitoGeral = new Array(labels.length).fill(0);
 
+  // Preenche dados
   dadosBrutos.forEach(item => {
     const mesAno = excelDateToMonthYear(item.data);
     const index = labels.indexOf(mesAno);
@@ -236,4 +271,5 @@ function atualizarGraficoGeral(filtro = "todos") {
   });
 }
 
+// Inicializa
 carregarPlanilha();
