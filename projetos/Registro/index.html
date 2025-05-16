@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Registrar Gasto</title>
+</head>
+<body>
+  <h2>Registrar Gasto</h2>
+  <form action="http://localhost:5678/webhook/gasto" method="POST">
+    <label>Valor:</label>
+    <input type="number" name="valor" required><br><br>
+    <label>Descrição:</label>
+    <input type="text" name="descricao" required><br><br>
+    <button type="submit">Enviar</button>
+  </form>
+</body>
+</html>
