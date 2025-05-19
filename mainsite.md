@@ -11,3 +11,9 @@ Já deixarei um exemplo de projeto pronto para você duplicar depois.
 O corpo principal ficará vazio (ou com um texto "Selecione um projeto").
 
 Estruturado em HTML + CSS, pronto pra você expandir.
+
+
+Start
+cd D:\Projetos\dockerN8N
+
+docker-compose up
