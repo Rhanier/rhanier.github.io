@@ -109,6 +109,8 @@ async function carregarPlanilha() {
 
     return { tipo, categoria, data, valor };
   }).filter(l => !isNaN(l.valor) && l.data instanceof Date && !isNaN(l.data));
+  // Ordena os dados por data
+dadosBrutos.sort((a, b) => a.data - b.data);
 
   // Gera lista de meses únicos ordenados
   const mesesSet = new Set();
