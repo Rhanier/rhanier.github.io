@@ -8,6 +8,8 @@
 </head>
 <body>
     <div class="container">
+        <button id="settings-btn" class="settings-btn" title="Alterar emojis">⚙️</button>
+        
         <h1>📅 Que dia é hoje?</h1>
         
         <div class="days-grid">
@@ -56,6 +58,32 @@
         
         <div class="info-box">
             <p>Hoje é <span id="today-day">Carregando...</span></p>
+        </div>
+    </div>
+    
+    <!-- Modal para alterar emojis -->
+    <div id="emoji-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>✏️ Alterar Emojis</h2>
+            <div class="modal-body">
+                <label for="day-select">Escolher dia:</label>
+                <select id="day-select">
+                    <option value="">Selecione um dia</option>
+                    <option value="0">Segunda</option>
+                    <option value="1">Terça</option>
+                    <option value="2">Quarta</option>
+                    <option value="3">Quinta</option>
+                    <option value="4">Sexta</option>
+                    <option value="5">Sábado</option>
+                    <option value="6">Domingo</option>
+                </select>
+                <input type="text" id="emoji-input" placeholder="Cole ou digite um emoji" maxlength="2">
+                <div class="modal-buttons">
+                    <button id="change-emoji-btn" class="btn-primary">Alterar Emoji</button>
+                    <button id="reset-btn" class="btn-secondary">Restaurar Padrão</button>
+                </div>
+            </div>
         </div>
     </div>
     
