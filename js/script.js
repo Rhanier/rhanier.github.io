@@ -14,14 +14,25 @@
   }
   
   function carregarProjeto(url) {
-    const iframe = document.getElementById('projeto-frame');
-    const placeholder = document.getElementById('placeholder-text');
-  
-    iframe.src = url;
-    iframe.style.display = 'block';
-    placeholder.style.display = 'none';
-    sidebar.classList.add('hidden');
-
+    // Projetos que devem abrir em página completa (fora do iframe)
+    const fullPageProjects = ['Calendario', 'Horarios'];
+    
+    // Verifica se o projeto deve abrir em página completa
+    const shouldOpenFullPage = fullPageProjects.some(project => url.includes(project));
+    
+    if (shouldOpenFullPage) {
+      // Abre em página completa/nova aba
+      window.location.href = url;
+    } else {
+      // Abre dentro do iframe
+      const iframe = document.getElementById('projeto-frame');
+      const placeholder = document.getElementById('placeholder-text');
+    
+      iframe.src = url;
+      iframe.style.display = 'block';
+      placeholder.style.display = 'none';
+      sidebar.classList.add('hidden');
+    }
   }
   
   function selecionarProjeto(nomeProjeto) {
