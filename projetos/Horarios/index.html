@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relógio de Atividades</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>⏰ Meu Horário do Dia</h1>
+        
+        <div class="clock-section">
+            <svg class="clock" viewBox="0 0 400 400">
+                <!-- Fundo do relógio -->
+                <circle cx="200" cy="200" r="190" class="clock-face"/>
+                
+                <!-- Fatias de atividades -->
+                <!-- Almoço: 11:30 - 13:00 -->
+                <path class="activity-slice" id="lunch" d="M 200,200 L 200,20 A 180,180 0 0,1 254.72,40.36 Z" fill="#FFB347" opacity="0.7"/>
+                
+                <!-- Escova de dente: 13:00 - 14:00 -->
+                <path class="activity-slice" id="brush" d="M 200,200 L 254.72,40.36 A 180,180 0 0,1 290,50 Z" fill="#87CEEB" opacity="0.7"/>
+                
+                <!-- Ícones dentro das fatias -->
+                <text x="210" y="70" font-size="50" text-anchor="middle" dominant-baseline="middle" class="activity-icon-text">🍽️</text>
+                <text x="255" y="65" font-size="50" text-anchor="middle" dominant-baseline="middle" class="activity-icon-text">🪥</text>
+                
+                <!-- Números do relógio -->
+                <g class="numbers">
+                    <text x="200" y="45" text-anchor="middle" dominant-baseline="middle" class="number">12</text>
+                    <text x="330" y="205" text-anchor="middle" dominant-baseline="middle" class="number">3</text>
+                    <text x="200" y="370" text-anchor="middle" dominant-baseline="middle" class="number">6</text>
+                    <text x="70" y="205" text-anchor="middle" dominant-baseline="middle" class="number">9</text>
+                </g>
+                
+                <!-- Linhas das horas -->
+                <g class="hour-marks">
+                    <line x1="200" y1="20" x2="200" y2="45" stroke="#333" stroke-width="4"/>
+                    <line x1="200" y1="20" x2="200" y2="45" stroke="#333" stroke-width="4" transform="rotate(30 200 200)"/>
+                    <line x1="200" y1="20" x2="200" y2="45" stroke="#333" stroke-width="4" transform="rotate(60 200 200)"/>
+                    <line x1="200" y1="20" x2="200" y2="45" stroke="#333" stroke-width="4" transform="rotate(90 200 200)"/>
+                    <line x1="200" y1="20" x2="200" y2="45" stroke="#333" stroke-width="4" transform="rotate(120 200 200)"/>
+                    <line x1="200" y1="20" x2="200" y2="45" stroke="#333" stroke-width="4" transform="rotate(150 200 200)"/>
+                    <line x1="200" y1="20" x2="200" y2="45" stroke="#333" stroke-width="4" transform="rotate(180 200 200)"/>
+                    <line x1="200" y1="20" x2="200" y2="45" stroke="#333" stroke-width="4" transform="rotate(210 200 200)"/>
+                    <line x1="200" y1="20" x2="200" y2="45" stroke="#333" stroke-width="4" transform="rotate(240 200 200)"/>
+                    <line x1="200" y1="20" x2="200" y2="45" stroke="#333" stroke-width="4" transform="rotate(270 200 200)"/>
+                    <line x1="200" y1="20" x2="200" y2="45" stroke="#333" stroke-width="4" transform="rotate(300 200 200)"/>
+                    <line x1="200" y1="20" x2="200" y2="45" stroke="#333" stroke-width="4" transform="rotate(330 200 200)"/>
+                </g>
+                
+                <!-- Ponteiros -->
+                <line class="hand hour" x1="200" y1="200" x2="200" y2="90" stroke="#FF6B6B" stroke-width="10" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+                <line class="hand minute" x1="200" y1="200" x2="200" y2="50" stroke="#4ECDC4" stroke-width="7" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+                <line class="hand second" x1="200" y1="200" x2="200" y2="40" stroke="#FFE66D" stroke-width="4" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+                
+                <!-- Centro do relógio -->
+                <circle cx="200" cy="200" r="10" fill="#333"/>
+            </svg>
+            
+            <div class="current-time" id="currentTime">--:--</div>
+        </div>
+        
+        <div class="activities">
+            <div class="activity">
+                <div class="activity-icon">🍽️</div>
+                <div class="activity-details">
+                    <h3>Almoço</h3>
+                    <p>11:30 - 13:00</p>
+                </div>
+            </div>
+            
+            <div class="activity">
+                <div class="activity-icon">🪥</div>
+                <div class="activity-details">
+                    <h3>Escova de Dente</h3>
+                    <p>13:00 - 14:00</p>
+                </div>
+            </div>
+        </div>
+        
+        <button class="add-activity-btn" id="addActivityBtn">+ Adicionar Horário</button>
+    </div>
+    
+    <!-- Modal para adicionar atividade -->
+    <div id="activityModal" class="modal">
+        <div class="modal-content">
+            <h2>Adicionar Nova Atividade</h2>
+            
+            <form id="activityForm">
+                <div class="form-group">
+                    <label for="activityName">Nome da Atividade:</label>
+                    <input type="text" id="activityName" placeholder="Ex: Brincadeira, Leitura, Jantar" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="activityIcon">Escolha um ícone:</label>
+                    <div class="icon-picker">
+                        <button type="button" class="icon-option" data-icon="🎮">🎮</button>
+                        <button type="button" class="icon-option" data-icon="📚">📚</button>
+                        <button type="button" class="icon-option" data-icon="🍜">🍜</button>
+                        <button type="button" class="icon-option" data-icon="🧩">🧩</button>
+                        <button type="button" class="icon-option" data-icon="🎨">🎨</button>
+                        <button type="button" class="icon-option" data-icon="🏃">🏃</button>
+                        <button type="button" class="icon-option" data-icon="🌤️">🌤️</button>
+                        <button type="button" class="icon-option" data-icon="🎵">🎵</button>
+                    </div>
+                    <input type="hidden" id="activityIcon" value="🎮" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="startTime">Hora de Início:</label>
+                    <input type="time" id="startTime" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="endTime">Hora de Término:</label>
+                    <input type="time" id="endTime" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="activityColor">Cor:</label>
+                    <div class="color-picker">
+                        <input type="color" id="activityColor" value="#FF6B9D" required>
+                    </div>
+                </div>
+                
+                <div class="form-buttons">
+                    <button type="submit" class="btn-primary">Adicionar</button>
+                    <button type="button" class="btn-secondary" id="closeModalBtn">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
