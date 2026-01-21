@@ -197,8 +197,8 @@ h1 {
     height: 35px;
     border: none;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.9);
-    color: #ff4444;
+    background: rgba(34, 197, 94, 0.9);
+    color: white;
     font-size: 1.5em;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -209,9 +209,9 @@ h1 {
 }
 
 .delete-btn:hover {
-    background: white;
+    background: #22c55e;
     transform: scale(1.2);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 5px 15px rgba(34, 197, 94, 0.5);
 }
 
 .activity-icon {
@@ -219,11 +219,18 @@ h1 {
     margin-bottom: 10px;
     animation: bounce 2s ease-in-out infinite;
 }
+
+.button-group {
+    display: grid;
+    grid-template-rows: auto;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.add-activity-btn,
+.reset-btn {
     width: 100%;
     padding: 15px;
-    margin-top: 30px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
     border: none;
     border-radius: 20px;
     font-size: 1.2em;
@@ -234,12 +241,28 @@ h1 {
     font-family: 'Comic Sans MS', cursive, sans-serif;
 }
 
+.add-activity-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.reset-btn {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+}
+
 .add-activity-btn:hover {
     transform: translateY(-3px);
     box-shadow: 0 12px 24px rgba(102, 126, 234, 0.6);
 }
 
-.add-activity-btn:active {
+.reset-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 24px rgba(245, 87, 108, 0.6);
+}
+
+.add-activity-btn:active,
+.reset-btn:active {
     transform: translateY(-1px);
 }
 
@@ -436,6 +459,10 @@ h1 {
     }
     
     .activities {
+        grid-template-columns: 1fr;
+    }
+    
+    .button-group {
         grid-template-columns: 1fr;
     }
     

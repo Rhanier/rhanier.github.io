@@ -1,13 +1,18 @@
-// Armazenar atividades em localStorage
-let activities = JSON.parse(localStorage.getItem('activities')) || [
-    { name: 'Almoço', icon: '🍽️', startTime: '11:30', endTime: '13:00', color: '#FFB347', id: 1 },
-    { name: 'Escova de Dente', icon: '🪥', startTime: '13:00', endTime: '14:00', color: '#87CEEB', id: 2 }
+// Atividades padrão
+const defaultActivities = [
+    { name: 'Café da manhã', icon: '☕', startTime: '07:00', endTime: '08:00', color: '#FFB347', id: Date.now() + 1 },
+    { name: 'Brincar', icon: '🏃', startTime: '08:00', endTime: '11:00', color: '#11b4e6', id: Date.now() + 2 },
+    { name: 'Almoço', icon: '🍽️', startTime: '12:00', endTime: '13:00', color: '#FF6B6B', id: Date.now() + 3 }
 ];
+
+// Armazenar atividades em localStorage
+let activities = JSON.parse(localStorage.getItem('activities')) || JSON.parse(JSON.stringify(defaultActivities));
 
 // Elementos do DOM
 const modal = document.getElementById('activityModal');
 const addActivityBtn = document.getElementById('addActivityBtn');
 const closeModalBtn = document.getElementById('closeModalBtn');
+const resetBtn = document.getElementById('resetBtn');
 const activityForm = document.getElementById('activityForm');
 const iconOptions = document.querySelectorAll('.icon-option');
 const activityIconInput = document.getElementById('activityIcon');
@@ -17,6 +22,16 @@ const activitiesContainer = document.querySelector('.activities');
 // Abrir modal
 addActivityBtn.addEventListener('click', () => {
     modal.classList.add('show');
+});
+
+// Restaurar configurações padrão
+resetBtn.addEventListener('click', () => {
+    if (confirm('Deseja restaurar as atividades padrão? Isso apagará todas as atividades atuais.')) {
+        activities = JSON.parse(JSON.stringify(defaultActivities));
+        localStorage.setItem('activities', JSON.stringify(activities));
+        renderActivities();
+        renderClockSlices();
+    }
 });
 
 // Fechar modal
@@ -135,7 +150,14 @@ function renderClockSlices() {
 function renderActivities() {
     activitiesContainer.innerHTML = '';
     
-    activities.forEach((activity, index) => {
+    // Ordenar atividades por horário de início
+    const sortedActivities = [...activities].sort((a, b) => {
+        const timeA = a.startTime.split(':').map(Number);
+        const timeB = b.startTime.split(':').map(Number);
+        return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1]);
+    });
+    
+    sortedActivities.forEach((activity, index) => {
         const activityDiv = document.createElement('div');
         activityDiv.className = 'activity';
         activityDiv.style.background = `linear-gradient(135deg, ${activity.color} 0%, ${adjustColor(activity.color, -30)} 100%)`;
@@ -146,7 +168,7 @@ function renderActivities() {
                 <h3>${activity.name}</h3>
                 <p>${activity.startTime} - ${activity.endTime}</p>
             </div>
-            <button class="delete-btn" data-id="${activity.id}">✕</button>
+            <button class="delete-btn" data-id="${activity.id}">✓</button>
         `;
         
         activitiesContainer.appendChild(activityDiv);
