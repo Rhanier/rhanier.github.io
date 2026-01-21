@@ -2,7 +2,8 @@
 const defaultActivities = [
     { name: 'Café da manhã', icon: '☕', startTime: '07:00', endTime: '08:00', color: '#FFB347', id: Date.now() + 1 },
     { name: 'Brincar', icon: '🏃', startTime: '08:00', endTime: '11:00', color: '#11b4e6', id: Date.now() + 2 },
-    { name: 'Almoço', icon: '🍽️', startTime: '12:00', endTime: '13:00', color: '#FF6B6B', id: Date.now() + 3 }
+    { name: 'Escovar os dentes', icon: '🪥', startTime: '12:30', endTime: '13:00', color: '#38c757', id: Date.now() + 2 },
+    { name: 'Almoço', icon: '🍽️', startTime: '11:30', endTime: '12:30', color: '#FF6B6B', id: Date.now() + 3 }
 ];
 
 // Armazenar atividades em localStorage
@@ -211,7 +212,7 @@ function updateClock() {
     const hourDegrees = ((hours % 12) / 12) * 360 + (minutes / 60) * 30;
     
     // Aplicar rotação com origem no eixo correto
-    document.querySelector('.hand.hour').style.transform = `rotate(${hourDegrees}deg)`;
+    document.querySelector('.hand.hour-arrow').style.transform = `rotate(${hourDegrees}deg)`;
     document.querySelector('.hand.minute').style.transform = `rotate(${minuteDegrees}deg)`;
     document.querySelector('.hand.second').style.transform = `rotate(${secondDegrees}deg)`;
     
