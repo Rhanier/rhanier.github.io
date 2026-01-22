@@ -1,0 +1,1614 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sistema de gerenciamento de fazenda de gados com mapas de pastos">
+    <title>Gerenciador de Fazenda de Gados</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            color: #333;
+            font-size: 2.5em;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-danger {
+            background: #ff6b6b;
+            color: white;
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        .btn-danger:hover {
+            background: #ff5252;
+        }
+
+        .content {
+            display: grid;
+            gap: 20px;
+        }
+
+        .section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        textarea,
+        input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        input[type="date"]:focus,
+        textarea:focus,
+        input[type="file"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .image-preview {
+            margin-top: 15px;
+            position: relative;
+        }
+
+        .image-preview img {
+            max-width: 300px;
+            max-height: 300px;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-submit {
+            flex: 1;
+            padding: 14px;
+            font-size: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .cattle-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .cattle-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .cattle-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.15);
+        }
+
+        .cattle-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .cattle-info {
+            padding: 15px;
+        }
+
+        .cattle-id {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .cattle-detail {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .cattle-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .btn-small {
+            flex: 1;
+            padding: 8px 12px;
+            font-size: 13px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-view {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-view:hover {
+            background: #5568d3;
+        }
+
+        .btn-delete {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #ff5252;
+        }
+
+        .detail-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: white;
+            margin: 50px auto;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .close-modal {
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+        }
+
+        .close-modal:hover {
+            color: #000;
+        }
+
+        .history-entry {
+            background: #f9f9f9;
+            padding: 15px;
+            border-left: 4px solid #667eea;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+
+        .history-date {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .history-weight {
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .history-comment {
+            color: #666;
+            font-style: italic;
+            margin-top: 8px;
+        }
+
+        .history-image {
+            max-width: 200px;
+            max-height: 200px;
+            margin-top: 10px;
+            border-radius: 6px;
+            border: 2px solid #ddd;
+        }
+
+        #map {
+            width: 100%;
+            height: 600px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .map-info {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .map-info h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .map-info p {
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .pasture-form {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .legend {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .legend-color {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 10px;
+            border: 2px solid #ddd;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: #666;
+        }
+
+        .success-message {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            animation: slideIn 0.3s;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .nav-buttons {
+                flex-wrap: wrap;
+                width: 100%;
+            }
+            
+            .nav-buttons .btn {
+                flex: 1 1 calc(50% - 10px);
+                min-width: 140px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .cattle-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            #mapa > div:first-child {
+                grid-template-columns: 1fr !important;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 20px auto;
+                padding: 20px;
+            }
+        }
+        
+        /* Melhorias de acessibilidade */
+        *:focus-visible {
+            outline: 3px solid #667eea;
+            outline-offset: 2px;
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* Animações suaves */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+        
+        /* Loading state */
+        .loading {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+        
+        .loading::after {
+            content: "...";
+            animation: dots 1s steps(4, end) infinite;
+        }
+        
+        @keyframes dots {
+            0%, 20% { content: "."; }
+            40% { content: ".."; }
+            60%, 100% { content: "..."; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🐄 Gerenciador Fazenda Gados</h1>
+            <div class="nav-buttons">
+                <button class="btn btn-primary" onclick="showSection('cadastro')">➕ Novo Gado</button>
+                <button class="btn btn-secondary" onclick="showSection('visualizacao')">👁️ Visualizar Gados</button>
+                <button class="btn btn-secondary" onclick="showSection('mapa')">🗺️ Mapa Pastos</button>
+            </div>
+        </header>
+
+        <div class="content">
+            <!-- SEÇÃO CADASTRO -->
+            <div id="cadastro" class="section active">
+                <h2>📝 Cadastrar Novo Gado</h2>
+                <div class="success-message" id="successMessage">✓ Gado cadastrado com sucesso!</div>
+                
+                <form id="cattleForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cattleId">ID/Número do Gado *</label>
+                            <input type="text" id="cattleId" name="cattleId" placeholder="Ex: VACA-001" required>
+                            <small style="color: #999; margin-top: 5px; display: block;">Auto-gerado, mas pode ser editado</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="cattleRace">Raça *</label>
+                            <input type="text" id="cattleRace" name="cattleRace" value="Nelore" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cattleWeight">Peso (kg) *</label>
+                            <input type="number" id="cattleWeight" name="cattleWeight" placeholder="Ex: 500" min="0" step="0.1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="cattleAge">Idade (meses)</label>
+                            <input type="number" id="cattleAge" name="cattleAge" placeholder="Ex: 24" min="0" value="">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cattlePhoto">Foto do Gado 📷</label>
+                        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                            <button type="button" class="btn-submit" style="flex: 1; padding: 10px;" onclick="captureCattlePhoto()">📱 Tirar Foto</button>
+                            <button type="button" class="btn-secondary" style="flex: 1; padding: 10px; border-radius: 8px;" onclick="uploadCattlePhoto()">📂 Enviar Arquivo</button>
+                        </div>
+                        <input type="file" id="cattlePhoto" name="cattlePhoto" accept="image/*" style="display: none;">
+                        <input type="file" id="cattlePhotoCapture" name="cattlePhotoCapture" accept="image/*" capture="camera" style="display: none;">
+                        <div id="photoPreview" class="image-preview"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cattleComment">Observações</label>
+                        <textarea id="cattleComment" name="cattleComment" placeholder="Adicione comentários sobre o gado..."></textarea>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="submit" class="btn-submit">💾 Cadastrar Gado</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- SEÇÃO VISUALIZAÇÃO -->
+            <div id="visualizacao" class="section">
+                <h2>👁️ Gados Cadastrados</h2>
+                <div id="cattleContainer" class="cattle-grid">
+                    <div class="empty-state">
+                        <h3>Nenhum gado cadastrado ainda</h3>
+                        <p>Comece adicionando seu primeiro gado na seção de cadastro</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SEÇÃO MAPA -->
+            <div id="mapa" class="section">
+                <h2>🗺️ Mapa de Pastos</h2>
+                
+                <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px; margin-bottom: 20px;">
+                    <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; border-left: 4px solid #667eea;">
+                        <h3 style="margin-top: 0; color: #333;">📋 Pastos Cadastrados</h3>
+                        <div id="pasturesList" style="max-height: 400px; overflow-y: auto;">
+                            <p style="color: #999; text-align: center;">Nenhum pasto cadastrado</p>
+                        </div>
+                    </div>
+
+                    <div class="pasture-form">
+                        <h3>Adicionar Novo Pasto</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="pastureName">Nome do Pasto *</label>
+                                <input type="text" id="pastureName" placeholder="Ex: Pasto Norte" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="pastureArea">Área (hectares)</label>
+                                <input type="number" id="pastureArea" placeholder="Ex: 10" min="0" step="0.1">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>📍 Clique no mapa para adicionar pontos (mínimo 3 pontos para formar um polígono)</label>
+                            <div style="background: #f0f0f0; padding: 10px; border-radius: 8px; margin-bottom: 10px;">
+                                <p id="pointsCount" style="margin: 0; color: #666; font-size: 14px;">Pontos adicionados: 0</p>
+                                <button type="button" class="btn-secondary" style="margin-top: 8px; width: 100%; border-radius: 8px; padding: 8px;" onclick="clearPasturePoints()">🔄 Limpar Pontos</button>
+                            </div>
+                        </div>
+                        <button class="btn-submit" onclick="addPasture()">➕ Adicionar Pasto</button>
+                    </div>
+                </div>
+
+                <div id="map"></div>
+
+                <div class="legend">
+                    <h3>Legenda</h3>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #90ee90;"></div>
+                        <span>Pasto 1 (verde claro)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #428e45;"></div>
+                        <span>Pasto 8 (verde médio)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #1b5e20;"></div>
+                        <span>Pasto 10 (verde escuro)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #2196F3;"></div>
+                        <span>Ponto do Pasto</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #FFC107;"></div>
+                        <span>Gado no Pasto</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DETALHES -->
+    <div id="detailModal" class="detail-modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // ========== ESTADO DA APLICAÇÃO ==========
+        const AppState = {
+            cattle: JSON.parse(localStorage.getItem('cattle')) || [],
+            pastures: JSON.parse(localStorage.getItem('pastures')) || [],
+            map: null,
+            mapMarkers: [],
+            mapPastures: [],
+            pasturePoints: [],
+            pasturePolygons: [],
+            pastureMarkers: [],
+            currentPhotoData: null
+        };
+        
+        // Cores verde gradiente para os pastos (1 = claro, 10 = escuro)
+        const PASTURE_COLORS = [
+            '#90ee90', '#83de83', '#76ce77', '#69be6a', '#5cae5e',
+            '#4f9e51', '#428e45', '#357e38', '#286e2c', '#1b5e20'
+        ];
+        
+        // ========== UTILIDADES ==========
+        const Utils = {
+            getPastureColor: (index) => PASTURE_COLORS[index % PASTURE_COLORS.length],
+            
+            escapeHtml: (text) => {
+                const map = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                };
+                return text.replace(/[&<>"']/g, m => map[m]);
+            },
+            
+            showSuccess: (message) => {
+                const msg = document.getElementById('successMessage');
+                if (msg) {
+                    msg.textContent = message;
+                    msg.classList.add('show');
+                    setTimeout(() => msg.classList.remove('show'), 3000);
+                }
+            },
+            
+            showError: (message) => {
+                alert('❌ ' + message);
+            }
+        };
+        
+        // ========== GERENCIAMENTO DE DADOS ==========
+        const DataManager = {
+            saveCattle: () => {
+                try {
+                    localStorage.setItem('cattle', JSON.stringify(AppState.cattle));
+                    return true;
+                } catch (e) {
+                    Utils.showError('Erro ao salvar dados: ' + e.message);
+                    return false;
+                }
+            },
+            
+            savePastures: () => {
+                try {
+                    localStorage.setItem('pastures', JSON.stringify(AppState.pastures));
+                    return true;
+                } catch (e) {
+                    Utils.showError('Erro ao salvar pastos: ' + e.message);
+                    return false;
+                }
+            },
+            
+            generateCattleId: () => {
+                const count = AppState.cattle.length + 1;
+                return `VACA-${String(count).padStart(3, '0')}`;
+            }
+        };
+        
+        // Compatibilidade com código legado
+        let cattle = AppState.cattle;
+        let pastures = AppState.pastures;
+        let map = AppState.map;
+        let mapMarkers = AppState.mapMarkers;
+        let mapPastures = AppState.mapPastures;
+        let pasturePoints = AppState.pasturePoints;
+        let pasturePolygons = AppState.pasturePolygons;
+        let pastureMarkers = AppState.pastureMarkers;
+        
+        function getPastureColor(index) {
+            return Utils.getPastureColor(index);
+        }
+
+        // ========== GERENCIAMENTO DE FOTOS ==========
+        const PhotoManager = {
+            processFile: (file) => {
+                if (!file) return;
+                
+                // Validar tipo de arquivo
+                if (!file.type.match('image.*')) {
+                    Utils.showError('Por favor, selecione apenas imagens');
+                    return;
+                }
+                
+                // Validar tamanho (máx 5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    Utils.showError('Imagem muito grande. Máximo: 5MB');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const preview = document.getElementById('photoPreview');
+                    if (preview) {
+                        preview.innerHTML = `
+                            <div style="position: relative;">
+                                <img src="${event.target.result}" alt="Preview da foto" style="max-width: 300px; max-height: 300px; border-radius: 8px; border: 2px solid #e0e0e0;">
+                                <button type="button" 
+                                        style="position: absolute; top: 10px; right: 10px; background: #ff6b6b; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 18px;" 
+                                        onclick="PhotoManager.clear()"
+                                        aria-label="Remover foto">✕</button>
+                            </div>
+                        `;
+                        AppState.currentPhotoData = event.target.result;
+                        const form = document.getElementById('cattleForm');
+                        if (form) form.photoData = event.target.result;
+                    }
+                };
+                reader.onerror = () => {
+                    Utils.showError('Erro ao ler arquivo de imagem');
+                };
+                reader.readAsDataURL(file);
+            },
+            
+            clear: () => {
+                const preview = document.getElementById('photoPreview');
+                if (preview) preview.innerHTML = '';
+                
+                const photoInput = document.getElementById('cattlePhoto');
+                const captureInput = document.getElementById('cattlePhotoCapture');
+                
+                if (photoInput) photoInput.value = '';
+                if (captureInput) captureInput.value = '';
+                
+                AppState.currentPhotoData = null;
+                const form = document.getElementById('cattleForm');
+                if (form) form.photoData = '';
+            }
+        };
+        
+        // Funções globais para compatibilidade
+        function generateCattleId() {
+            return DataManager.generateCattleId();
+        }
+        
+        function captureCattlePhoto() {
+            const input = document.getElementById('cattlePhotoCapture');
+            if (input) input.click();
+        }
+        
+        function uploadCattlePhoto() {
+            const input = document.getElementById('cattlePhoto');
+            if (input) input.click();
+        }
+        
+        function clearPhoto() {
+            PhotoManager.clear();
+        }
+
+        // ========== GERENCIAMENTO DE PASTOS ==========
+        const PastureManager = {
+            updateList: () => {
+                const list = document.getElementById('pasturesList');
+                if (!list) return;
+                
+                if (AppState.pastures.length === 0) {
+                    list.innerHTML = '<p style="color: #999; text-align: center;">Nenhum pasto cadastrado</p>';
+                    return;
+                }
+
+                list.innerHTML = AppState.pastures.map((pasture, index) => {
+                    const cattleInPasture = AppState.cattle.filter(c => c.pasture === pasture.name);
+                    const color = Utils.getPastureColor(index);
+                    const safeName = Utils.escapeHtml(pasture.name);
+                    const safeArea = Utils.escapeHtml(pasture.area);
+                    
+                    // Garantir que o pasto tenha pontos válidos
+                    const firstPoint = pasture.points && pasture.points[0] ? pasture.points[0] : { lat: 0, lng: 0 };
+                    
+                    return `
+                        <div class="pasture-list-item" 
+                             style="background: white; padding: 12px; margin-bottom: 10px; border-radius: 6px; border-left: 4px solid ${color}; cursor: pointer; transition: all 0.3s;" 
+                             onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'" 
+                             onmouseout="this.style.boxShadow='none'"
+                             onclick="focusPastureOnMap('${safeName}', ${firstPoint.lat}, ${firstPoint.lng})"
+                             role="button"
+                             tabindex="0"
+                             aria-label="Ver pasto ${safeName} no mapa">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <strong style="color: #333;">#${index + 1} ${safeName}</strong>
+                                <span style="background: ${color}; color: white; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: bold;" aria-label="${cattleInPasture.length} gados">🐄 ${cattleInPasture.length}</span>
+                            </div>
+                            <small style="color: #999;">Área: ${safeArea} ha</small>
+                        </div>
+                    `;
+                }).join('');
+            },
+            
+            add: () => {
+                const nameInput = document.getElementById('pastureName');
+                const areaInput = document.getElementById('pastureArea');
+                
+                if (!nameInput || !areaInput) return false;
+                
+                const name = nameInput.value.trim();
+                const area = areaInput.value.trim();
+
+                // Validações
+                if (!name) {
+                    Utils.showError('Preencha o nome do pasto');
+                    return false;
+                }
+                
+                if (AppState.pasturePoints.length < 3) {
+                    Utils.showError('Adicione no mínimo 3 pontos no mapa para formar o pasto');
+                    return false;
+                }
+                
+                // Verificar duplicação de nome
+                if (AppState.pastures.some(p => p.name === name)) {
+                    Utils.showError('Já existe um pasto com este nome');
+                    return false;
+                }
+
+                const newPasture = { 
+                    name, 
+                    area: area || '0', 
+                    points: AppState.pasturePoints.slice(),
+                    date: new Date().toLocaleDateString('pt-BR')
+                };
+                
+                AppState.pastures.push(newPasture);
+                pastures = AppState.pastures;
+                
+                if (!DataManager.savePastures()) {
+                    AppState.pastures.pop();
+                    pastures = AppState.pastures;
+                    return false;
+                }
+
+                nameInput.value = '';
+                areaInput.value = '';
+                MapManager.clearPasturePoints();
+                MapManager.init();
+                
+                Utils.showSuccess(`✓ Pasto #${AppState.pastures.length} "${name}" adicionado com sucesso!`);
+                return true;
+            },
+            
+            focusOnMap: (pastureName, lat, lng) => {
+                if (AppState.map && lat && lng) {
+                    AppState.map.setView([lat, lng], 16);
+                }
+            }
+        };
+        
+        // Compatibilidade
+        function updatePasturesList() {
+            PastureManager.updateList();
+        }
+
+        // Focar no pasto no mapa (compatibilidade)
+        function focusPastureOnMap(pastureName, lat, lng) {
+            PastureManager.focusOnMap(pastureName, lat, lng);
+        }
+
+        // ========== GERENCIAMENTO DE MAPA ==========
+        const MapManager = {
+            init: () => {
+                if (AppState.map) {
+                    AppState.map.remove();
+                    map = null;
+                }
+                
+                // Calcular centro dos pastos ou usar padrão (Brasil central)
+                let mapCenter = [-22.9, -47.5];
+                let mapZoom = 13;
+                
+                if (AppState.pastures.length > 0 && 
+                    AppState.pastures[0].points && 
+                    AppState.pastures[0].points.length > 0) {
+                    mapCenter = [
+                        AppState.pastures[0].points[0].lat, 
+                        AppState.pastures[0].points[0].lng
+                    ];
+                    mapZoom = 14;
+                }
+                
+                try {
+                    AppState.map = L.map('map').setView(mapCenter, mapZoom);
+                    map = AppState.map;
+                    
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                        maxZoom: 19,
+                        minZoom: 3
+                    }).addTo(AppState.map);
+
+                    // Limpar estado dos pontos do pasto
+                    MapManager.clearPasturePoints();
+
+                    // Renderizar elementos do mapa
+                    MapManager.renderPastures();
+                    MapManager.renderCattle();
+                    MapManager.setupClickHandler();
+                    
+                    PastureManager.updateList();
+                } catch (error) {
+                    Utils.showError('Erro ao inicializar mapa: ' + error.message);
+                }
+            },
+            
+            renderPastures: () => {
+                AppState.mapMarkers = [];
+                AppState.mapPastures = [];
+                
+                AppState.pastures.forEach((pasture, index) => {
+                    if (!pasture.points || pasture.points.length < 3) return;
+                    
+                    const points = pasture.points.map(p => [p.lat, p.lng]);
+                    const color = Utils.getPastureColor(index);
+                    const safeName = Utils.escapeHtml(pasture.name);
+                    
+                    const polygon = L.polygon(points, {
+                        color: color,
+                        fillColor: color,
+                        fillOpacity: 0.4,
+                        weight: 3
+                    }).addTo(AppState.map);
+
+                    const cattleInPasture = AppState.cattle.filter(c => c.pasture === pasture.name);
+                    const popupText = `
+                        <div style="min-width: 150px;">
+                            <strong>#${index + 1} ${safeName}</strong><br>
+                            Área: ${pasture.area} ha<br>
+                            🐄 Gados: ${cattleInPasture.length}<br>
+                            <button class="btn-submit" style="margin-top: 8px; padding: 6px 12px; width: 100%;" onclick="openPastureDetails('${safeName}')">Ver Detalhes</button>
+                        </div>
+                    `;
+                    
+                    polygon.bindPopup(popupText);
+                    AppState.mapPastures.push(polygon);
+                });
+                
+                mapMarkers = AppState.mapMarkers;
+                mapPastures = AppState.mapPastures;
+            },
+            
+            renderCattle: () => {
+                AppState.cattle.forEach(c => {
+                    const pasture = AppState.pastures.find(p => p.name === c.pasture);
+                    if (!pasture || !pasture.points || pasture.points.length === 0) return;
+                    
+                    // Usar ponto central do pasto
+                    const centerPoint = pasture.points[0];
+                    const safeCattleId = Utils.escapeHtml(c.id);
+                    const safeCattleRace = Utils.escapeHtml(c.race);
+                    
+                    const marker = L.circleMarker([centerPoint.lat, centerPoint.lng], {
+                        radius: 8,
+                        fillColor: '#FFC107',
+                        color: '#FF8C00',
+                        weight: 2,
+                        opacity: 1,
+                        fillOpacity: 0.8
+                    }).addTo(AppState.map);
+                    
+                    marker.bindPopup(`
+                        <div style="min-width: 120px;">
+                            🐄 <strong>${safeCattleId}</strong><br>
+                            Raça: ${safeCattleRace}<br>
+                            Peso: ${c.weight} kg
+                        </div>
+                    `);
+                    
+                    AppState.pastureMarkers.push(marker);
+                });
+                
+                pastureMarkers = AppState.pastureMarkers;
+            },
+            
+            setupClickHandler: () => {
+                if (!AppState.map) return;
+                
+                AppState.map.on('click', (e) => {
+                    const newPoint = { lat: e.latlng.lat, lng: e.latlng.lng };
+                    AppState.pasturePoints.push(newPoint);
+                    pasturePoints = AppState.pasturePoints;
+                    
+                    // Adicionar marcador visual
+                    const marker = L.circleMarker([newPoint.lat, newPoint.lng], {
+                        radius: 6,
+                        fillColor: '#2196F3',
+                        color: '#1976D2',
+                        weight: 2,
+                        opacity: 1,
+                        fillOpacity: 0.8
+                    }).addTo(AppState.map);
+                    
+                    AppState.pastureMarkers.push(marker);
+                    
+                    // Desenhar linhas conectando pontos
+                    if (AppState.pasturePoints.length > 1) {
+                        const lastPoint = AppState.pasturePoints[AppState.pasturePoints.length - 2];
+                        const line = L.polyline([
+                            [lastPoint.lat, lastPoint.lng], 
+                            [newPoint.lat, newPoint.lng]
+                        ], {
+                            color: '#2196F3',
+                            weight: 2,
+                            opacity: 0.7,
+                            dashArray: '5, 5'
+                        }).addTo(AppState.map);
+                        
+                        AppState.pasturePolygons.push(line);
+                    }
+                    
+                    // Fechar o polígono quando tiver 3+ pontos
+                    if (AppState.pasturePoints.length >= 3) {
+                        const firstPoint = AppState.pasturePoints[0];
+                        const lastPoint = AppState.pasturePoints[AppState.pasturePoints.length - 1];
+                        const closeLine = L.polyline([
+                            [lastPoint.lat, lastPoint.lng], 
+                            [firstPoint.lat, firstPoint.lng]
+                        ], {
+                            color: '#2196F3',
+                            weight: 2,
+                            opacity: 0.7,
+                            dashArray: '5, 5'
+                        }).addTo(AppState.map);
+                        
+                        AppState.pasturePolygons.push(closeLine);
+                    }
+                    
+                    const pointsCountEl = document.getElementById('pointsCount');
+                    if (pointsCountEl) {
+                        pointsCountEl.textContent = `Pontos adicionados: ${AppState.pasturePoints.length}`;
+                    }
+                });
+            },
+            
+            clearPasturePoints: () => {
+                AppState.pasturePoints = [];
+                
+                AppState.pastureMarkers.forEach(marker => {
+                    if (AppState.map) AppState.map.removeLayer(marker);
+                });
+                AppState.pastureMarkers = [];
+                
+                AppState.pasturePolygons.forEach(poly => {
+                    if (AppState.map) AppState.map.removeLayer(poly);
+                });
+                AppState.pasturePolygons = [];
+                
+                // Atualizar variáveis globais
+                pasturePoints = AppState.pasturePoints;
+                pastureMarkers = AppState.pastureMarkers;
+                pasturePolygons = AppState.pasturePolygons;
+                
+                const pointsCountEl = document.getElementById('pointsCount');
+                if (pointsCountEl) {
+                    pointsCountEl.textContent = 'Pontos adicionados: 0';
+                }
+            }
+        };
+        
+        // Funções de compatibilidade global
+        function initMap() {
+            MapManager.init();
+        }
+        
+        function clearPasturePoints() {
+            MapManager.clearPasturePoints();
+        }
+
+        // ========== GERENCIAMENTO DE DETALHES E HISTÓRICO ==========
+        const DetailsManager = {
+            openCattleDetails: (index) => {
+                if (index < 0 || index >= AppState.cattle.length) return;
+                
+                const c = AppState.cattle[index];
+                const modal = document.getElementById('detailModal');
+                const content = document.getElementById('modalContent');
+                
+                if (!modal || !content) return;
+
+                const historyHTML = c.history.map(h => {
+                    const safeComment = h.comment ? Utils.escapeHtml(h.comment) : '';
+                    return `
+                        <div class="history-entry">
+                            <div class="history-date">📅 ${h.date}</div>
+                            <div class="history-weight">⚖️ Peso: ${h.weight} kg</div>
+                            ${safeComment ? `<div class="history-comment">💬 "${safeComment}"</div>` : ''}
+                            ${h.photo ? `<img src="${h.photo}" class="history-image" alt="Foto do histórico">` : ''}
+                        </div>
+                    `;
+                }).join('');
+
+                content.innerHTML = `
+                    <h2>${Utils.escapeHtml(c.id)}</h2>
+                    <div style="margin-top: 20px;">
+                        <h3>ℹ️ Informações Gerais</h3>
+                        <p><strong>Raça:</strong> ${Utils.escapeHtml(c.race)}</p>
+                        <p><strong>Idade:</strong> ${Utils.escapeHtml(c.age)} meses</p>
+                        <p><strong>Pasto Atual:</strong> ${Utils.escapeHtml(c.pasture)}</p>
+                        
+                        <h3 style="margin-top: 20px;">📊 Histórico de Peso</h3>
+                        ${historyHTML || '<p style="color: #999;">Sem histórico adicional</p>'}
+                        
+                        <h3 style="margin-top: 20px;">➕ Adicionar Novo Registro</h3>
+                        <div class="form-group">
+                            <label for="newWeight">Peso (kg) *</label>
+                            <input type="number" id="newWeight" placeholder="Ex: 520" step="0.1" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newComment">Observação</label>
+                            <textarea id="newComment" placeholder="Adicione uma observação..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="newPhoto">Foto 📷</label>
+                            <input type="file" id="newPhoto" accept="image/*">
+                        </div>
+                        <button class="btn-submit" onclick="DetailsManager.addHistory(${index})">➕ Adicionar Registro</button>
+                    </div>
+                `;
+                modal.style.display = 'block';
+            },
+            
+            openPastureDetails: (pastureName) => {
+                const modal = document.getElementById('detailModal');
+                const content = document.getElementById('modalContent');
+                
+                if (!modal || !content) return;
+                
+                const safeName = Utils.escapeHtml(pastureName);
+                const cattleInPasture = AppState.cattle.filter(c => c.pasture === pastureName);
+
+                let cattleList = cattleInPasture.map((c, idx) => {
+                    const safeCattleId = Utils.escapeHtml(c.id);
+                    const safeCattleRace = Utils.escapeHtml(c.race);
+                    return `
+                        <div style="background: #f9f9f9; padding: 10px; border-radius: 6px; margin-bottom: 8px;">
+                            <input type="checkbox" 
+                                   id="cattle_${idx}" 
+                                   onchange="DetailsManager.updateCattleAssignment('${pastureName}', '${c.id}', this.checked)" 
+                                   checked
+                                   aria-label="Remover ${safeCattleId} deste pasto">
+                            <label for="cattle_${idx}" style="margin-left: 8px; cursor: pointer;">
+                                🐄 ${safeCattleId} (${safeCattleRace}) - ${c.weight} kg
+                            </label>
+                        </div>
+                    `;
+                }).join('');
+
+                const allCattle = AppState.cattle.filter(c => c.pasture !== pastureName).map((c, idx) => {
+                    const safeCattleId = Utils.escapeHtml(c.id);
+                    const safeCattleRace = Utils.escapeHtml(c.race);
+                    return `
+                        <div style="background: #f9f9f9; padding: 10px; border-radius: 6px; margin-bottom: 8px;">
+                            <input type="checkbox" 
+                                   id="add_cattle_${idx}" 
+                                   onchange="DetailsManager.updateCattleAssignment('${pastureName}', '${c.id}', this.checked)"
+                                   aria-label="Adicionar ${safeCattleId} a este pasto">
+                            <label for="add_cattle_${idx}" style="margin-left: 8px; cursor: pointer;">
+                                🐄 ${safeCattleId} (${safeCattleRace}) - ${c.weight} kg
+                            </label>
+                        </div>
+                    `;
+                }).join('');
+
+                content.innerHTML = `
+                    <h2>📍 ${safeName}</h2>
+                    <div style="margin-top: 20px;">
+                        <h3>🐄 Gados Neste Pasto (${cattleInPasture.length})</h3>
+                        ${cattleList || '<p style="color: #999;">Nenhum gado neste pasto</p>'}
+                        
+                        <h3 style="margin-top: 20px;">➕ Adicionar Gados</h3>
+                        ${allCattle || '<p style="color: #999;">Todos os gados já estão atribuídos a pastos</p>'}
+                        
+                        <button class="btn-submit" style="margin-top: 20px;" onclick="closeModal()">✓ Fechar</button>
+                    </div>
+                `;
+                modal.style.display = 'block';
+            },
+            
+            updateCattleAssignment: (pastureName, cattleId, isAdding) => {
+                const cattleIndex = AppState.cattle.findIndex(c => c.id === cattleId);
+                if (cattleIndex === -1) return;
+                
+                if (isAdding) {
+                    AppState.cattle[cattleIndex].pasture = pastureName;
+                } else {
+                    AppState.cattle[cattleIndex].pasture = 'Sem pasto';
+                }
+                
+                cattle = AppState.cattle;
+                DataManager.saveCattle();
+                MapManager.init();
+            },
+            
+            addHistory: (index) => {
+                if (index < 0 || index >= AppState.cattle.length) return;
+                
+                const weightInput = document.getElementById('newWeight');
+                const commentInput = document.getElementById('newComment');
+                const photoInput = document.getElementById('newPhoto');
+                
+                if (!weightInput) return;
+                
+                const weight = parseFloat(weightInput.value);
+                const comment = commentInput ? commentInput.value.trim() : '';
+                
+                if (!weight || weight <= 0) {
+                    Utils.showError('Preencha um peso válido (maior que zero)');
+                    return;
+                }
+
+                const processHistory = (photoData) => {
+                    AppState.cattle[index].history.push({
+                        date: new Date().toLocaleDateString('pt-BR'),
+                        weight: weight,
+                        comment: comment,
+                        photo: photoData || ''
+                    });
+
+                    AppState.cattle[index].weight = weight;
+                    cattle = AppState.cattle;
+                    
+                    if (DataManager.saveCattle()) {
+                        closeModal();
+                        displayCattle();
+                        Utils.showSuccess('✓ Registro adicionado com sucesso!');
+                    }
+                };
+
+                if (photoInput && photoInput.files && photoInput.files[0]) {
+                    const file = photoInput.files[0];
+                    
+                    // Validar arquivo
+                    if (!file.type.match('image.*')) {
+                        Utils.showError('Selecione apenas imagens');
+                        return;
+                    }
+                    
+                    if (file.size > 5 * 1024 * 1024) {
+                        Utils.showError('Imagem muito grande. Máximo: 5MB');
+                        return;
+                    }
+                    
+                    const reader = new FileReader();
+                    reader.onload = (e) => processHistory(e.target.result);
+                    reader.onerror = () => Utils.showError('Erro ao ler imagem');
+                    reader.readAsDataURL(file);
+                } else {
+                    processHistory('');
+                }
+            }
+        };
+        
+        // Funções de compatibilidade global
+        function viewDetails(index) {
+            DetailsManager.openCattleDetails(index);
+        }
+        
+        function openPastureDetails(pastureName) {
+            DetailsManager.openPastureDetails(pastureName);
+        }
+        
+        function updateCattleAssignment(pastureName, cattleId, isAdding) {
+            DetailsManager.updateCattleAssignment(pastureName, cattleId, isAdding);
+        }
+        
+        function addHistory(index) {
+            DetailsManager.addHistory(index);
+        }
+        
+        function closeModal() {
+            const modal = document.getElementById('detailModal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        // Função global para adicionar pasto (compatibilidade)
+        function addPasture() {
+            PastureManager.add();
+        }
+
+        // ========== GERENCIAMENTO DE GADO ==========
+        const CattleManager = {
+            register: (formElement) => {
+                const idInput = document.getElementById('cattleId');
+                const raceInput = document.getElementById('cattleRace');
+                const weightInput = document.getElementById('cattleWeight');
+                const ageInput = document.getElementById('cattleAge');
+                const commentInput = document.getElementById('cattleComment');
+                
+                if (!idInput || !raceInput || !weightInput) {
+                    Utils.showError('Formulário incompleto');
+                    return false;
+                }
+                
+                const id = idInput.value.trim();
+                const race = raceInput.value.trim();
+                const weight = parseFloat(weightInput.value);
+                const age = ageInput ? ageInput.value.trim() : '';
+                const comment = commentInput ? commentInput.value.trim() : '';
+                
+                // Validações
+                if (!id || !race || !weight) {
+                    Utils.showError('Preencha todos os campos obrigatórios (ID, Raça e Peso)');
+                    return false;
+                }
+                
+                if (weight <= 0) {
+                    Utils.showError('O peso deve ser maior que zero');
+                    return false;
+                }
+                
+                // Verificar ID duplicado
+                if (AppState.cattle.some(c => c.id === id)) {
+                    Utils.showError('Já existe um gado com este ID');
+                    return false;
+                }
+
+                const cattleData = {
+                    id,
+                    race,
+                    weight,
+                    age: age || 'N/A',
+                    photo: formElement.photoData || '',
+                    comment,
+                    date: new Date().toLocaleDateString('pt-BR'),
+                    history: [],
+                    pasture: AppState.pastures.length > 0 ? AppState.pastures[0].name : 'Sem pasto'
+                };
+
+                // Adicionar à história
+                cattleData.history.push({
+                    date: cattleData.date,
+                    weight: cattleData.weight,
+                    comment: cattleData.comment,
+                    photo: cattleData.photo
+                });
+
+                AppState.cattle.push(cattleData);
+                cattle = AppState.cattle;
+                
+                if (!DataManager.saveCattle()) {
+                    AppState.cattle.pop();
+                    cattle = AppState.cattle;
+                    return false;
+                }
+
+                formElement.reset();
+                PhotoManager.clear();
+                formElement.photoData = '';
+                
+                // Gerar novo ID para próximo cadastro
+                idInput.value = DataManager.generateCattleId();
+                
+                Utils.showSuccess(`✓ Gado "${id}" cadastrado com sucesso!`);
+                setTimeout(() => showSection('visualizacao'), 1500);
+                return true;
+            },
+            
+            delete: (index) => {
+                if (index < 0 || index >= AppState.cattle.length) return false;
+                
+                const cattle = AppState.cattle[index];
+                if (!confirm(`Tem certeza que deseja excluir o gado "${cattle.id}"?`)) {
+                    return false;
+                }
+                
+                AppState.cattle.splice(index, 1);
+                if (DataManager.saveCattle()) {
+                    displayCattle();
+                    Utils.showSuccess('✓ Gado excluído com sucesso!');
+                    return true;
+                }
+                return false;
+            }
+        };
+
+        // Exibir gados
+        function displayCattle() {
+            const container = document.getElementById('cattleContainer');
+            if (!container) return;
+            
+            if (AppState.cattle.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>Nenhum gado cadastrado ainda</h3>
+                        <p>Comece adicionando seu primeiro gado na seção de cadastro</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = AppState.cattle.map((c, index) => {
+                const safeId = Utils.escapeHtml(c.id);
+                const safeRace = Utils.escapeHtml(c.race);
+                const safePasture = Utils.escapeHtml(c.pasture);
+                
+                return `
+                    <div class="cattle-card">
+                        ${c.photo 
+                            ? `<img src="${c.photo}" alt="Foto de ${safeId}" loading="lazy">` 
+                            : '<div style="width:100%;height:200px;background:#ddd;display:flex;align-items:center;justify-content:center;color:#999;flex-direction:column;"><span style="font-size: 48px;">🐄</span><span>Sem foto</span></div>'}
+                        <div class="cattle-info">
+                            <div class="cattle-id">${safeId}</div>
+                            <div class="cattle-detail">🏷️ Raça: ${safeRace}</div>
+                            <div class="cattle-detail">⚖️ Peso: ${c.weight} kg</div>
+                            <div class="cattle-detail">📅 Data: ${c.date}</div>
+                            <div class="cattle-detail">📍 Pasto: ${safePasture}</div>
+                            <div class="cattle-actions">
+                                <button class="btn-small btn-view" onclick="viewDetails(${index})" aria-label="Ver detalhes de ${safeId}">Detalhes</button>
+                                <button class="btn-small btn-delete" onclick="deleteCattle(${index})" aria-label="Excluir ${safeId}">Excluir</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Exibir seção
+        function showSection(sectionId) {
+            if (!sectionId) return;
+            
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.classList.add('active');
+            }
+
+            if (sectionId === 'visualizacao') {
+                displayCattle();
+            } else if (sectionId === 'mapa') {
+                // Pequeno delay para garantir que o container do mapa está renderizado
+                setTimeout(() => MapManager.init(), 100);
+            } else if (sectionId === 'cadastro') {
+                // Atualizar ID automático quando voltar para cadastro
+                const cattleIdInput = document.getElementById('cattleId');
+                if (cattleIdInput && !cattleIdInput.value) {
+                    cattleIdInput.value = DataManager.generateCattleId();
+                }
+            }
+        }
+
+        // Deletar gado (compatibilidade)
+        function deleteCattle(index) {
+            CattleManager.delete(index);
+        }
+
+        // Fechar modal (compatibilidade)
+        function closeModal() {
+            const modal = document.getElementById('detailModal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        // Exibir seção (compatibilidade)
+        function showSection(sectionId) {
+            if (!sectionId) return;
+            
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.classList.add('active');
+            }
+
+            if (sectionId === 'visualizacao') {
+                displayCattle();
+            } else if (sectionId === 'mapa') {
+                // Pequeno delay para garantir que o container do mapa está renderizado
+                setTimeout(() => MapManager.init(), 100);
+            } else if (sectionId === 'cadastro') {
+                // Atualizar ID automático quando voltar para cadastro
+                const cattleIdInput = document.getElementById('cattleId');
+                if (cattleIdInput && !cattleIdInput.value) {
+                    cattleIdInput.value = DataManager.generateCattleId();
+                }
+            }
+        }
+
+        // ========== INICIALIZAÇÃO ==========
+        function initializeApp() {
+            // Auto-gerar ID inicial
+            const cattleIdInput = document.getElementById('cattleId');
+            if (cattleIdInput) {
+                cattleIdInput.value = DataManager.generateCattleId();
+            }
+            
+            // Event handlers para fotos
+            const photoInput = document.getElementById('cattlePhoto');
+            const captureInput = document.getElementById('cattlePhotoCapture');
+            
+            if (photoInput) {
+                photoInput.addEventListener('change', (e) => {
+                    if (e.target.files && e.target.files[0]) {
+                        PhotoManager.processFile(e.target.files[0]);
+                    }
+                });
+            }
+            
+            if (captureInput) {
+                captureInput.addEventListener('change', (e) => {
+                    if (e.target.files && e.target.files[0]) {
+                        PhotoManager.processFile(e.target.files[0]);
+                    }
+                });
+            }
+            
+            // Event handler para formulário de cadastro
+            const cattleForm = document.getElementById('cattleForm');
+            if (cattleForm) {
+                cattleForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    CattleManager.register(cattleForm);
+                });
+            }
+            
+            // Fechar modal ao clicar fora
+            window.addEventListener('click', (event) => {
+                const modal = document.getElementById('detailModal');
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+            
+            // Tecla ESC fecha modal
+            window.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') {
+                    const modal = document.getElementById('detailModal');
+                    if (modal && modal.style.display === 'block') {
+                        closeModal();
+                    }
+                }
+            });
+            
+            // Exibir gados cadastrados
+            displayCattle();
+        }
+        
+        // Funções de compatibilidade global
+        function showSuccess(message) {
+            Utils.showSuccess(message);
+        }
+        
+        // Inicializar quando DOM estiver pronto
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeApp);
+        } else {
+            initializeApp();
+        }
+    </script>
+</body>
+</html>
