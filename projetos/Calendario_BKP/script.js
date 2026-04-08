@@ -13,10 +13,6 @@ function saveEmojis(emojis) {
     localStorage.setItem('dayEmojis', JSON.stringify(emojis));
 }
 
-function normalizeEmojiText(value) {
-    return value.replace(/\s+/g, ' ').trim();
-}
-
 // Aplicar emojis aos cards
 function applyEmojis(emojis) {
     const dayCards = document.querySelectorAll('.day-card');
@@ -57,7 +53,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const daySelect = document.getElementById('day-select');
     const emojiInput = document.getElementById('emoji-input');
     const changeBtn = document.getElementById('change-emoji-btn');
-    const addBtn = document.getElementById('add-emoji-btn');
     const resetBtn = document.getElementById('reset-btn');
     
     // Abrir modal
@@ -81,10 +76,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     changeBtn.addEventListener('click', function() {
         const selectedDay = daySelect.value;
-        const newEmoji = normalizeEmojiText(emojiInput.value);
+        const newEmoji = emojiInput.value.trim();
         
         if (selectedDay === '' || newEmoji === '') {
-            alert('Por favor, selecione um dia e digite pelo menos um emoji');
+            alert('Por favor, selecione um dia e digite um emoji');
             return;
         }
         
@@ -97,30 +92,7 @@ document.addEventListener('DOMContentLoaded', function() {
         daySelect.value = '';
         emojiInput.value = '';
         
-        alert(`Emojis de ${diasSemana[dayIndex]} salvos: ${newEmoji}`);
-        modal.style.display = 'none';
-    });
-
-    addBtn.addEventListener('click', function() {
-        const selectedDay = daySelect.value;
-        const newEmoji = normalizeEmojiText(emojiInput.value);
-
-        if (selectedDay === '' || newEmoji === '') {
-            alert('Por favor, selecione um dia e digite pelo menos um emoji');
-            return;
-        }
-
-        const dayIndex = parseInt(selectedDay);
-        const currentEmoji = normalizeEmojiText(String(emojis[dayIndex] || ''));
-        emojis[dayIndex] = currentEmoji ? `${currentEmoji} ${newEmoji}` : newEmoji;
-
-        saveEmojis(emojis);
-        applyEmojis(emojis);
-
-        daySelect.value = '';
-        emojiInput.value = '';
-
-        alert(`Emojis adicionados em ${diasSemana[dayIndex]}: ${newEmoji}`);
+        alert(`Emoji de ${diasSemana[dayIndex]} alterado para ${newEmoji}`);
         modal.style.display = 'none';
     });
     
