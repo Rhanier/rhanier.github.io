@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Timer Mágico Infantil</title>
+  <style>
+    :root {
+      --bg: #f6fbff;
+      --bg-2: #eef8ff;
+      --panel: rgba(255,255,255,0.82);
+      --panel-strong: #ffffff;
+      --text: #18324a;
+      --muted: #53708b;
+      --primary: #4f7cff;
+      --primary-2: #7a5cff;
+      --accent: #ffb703;
+      --accent-2: #ff7eb6;
+      --success: #21b66f;
+      --danger: #ff6b6b;
+      --track: #dcecff;
+      --shadow: 0 18px 40px rgba(70, 110, 180, 0.16);
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 16px;
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 20px;
+      --space-6: 24px;
+      --space-8: 32px;
+      --space-10: 40px;
+      --space-12: 48px;
+      --font: "Trebuchet MS", "Arial", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      font-family: var(--font);
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, #fff8cc 0, rgba(255,248,204,0.85) 14%, transparent 32%),
+        radial-gradient(circle at top right, #ffd8ec 0, rgba(255,216,236,0.7) 16%, transparent 34%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+      overflow-x: hidden;
+    }
+
+    .stars-bg,
+    .stars-bg::before,
+    .stars-bg::after {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      content: "";
+    }
+
+    .stars-bg {
+      background-image:
+        radial-gradient(circle at 10% 15%, rgba(255,255,255,0.95) 0 2px, transparent 3px),
+        radial-gradient(circle at 80% 12%, rgba(255,255,255,0.9) 0 2px, transparent 3px),
+        radial-gradient(circle at 22% 70%, rgba(255,255,255,0.9) 0 2px, transparent 3px),
+        radial-gradient(circle at 68% 80%, rgba(255,255,255,0.75) 0 2px, transparent 3px),
+        radial-gradient(circle at 92% 48%, rgba(255,255,255,0.75) 0 2px, transparent 3px);
+      opacity: 0.8;
+    }
+
+    .stars-bg::before {
+      background: linear-gradient(transparent 0%, rgba(255,255,255,0.16) 50%, transparent 100%);
+      animation: drift 14s linear infinite;
+    }
+
+    .stars-bg::after {
+      background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.15), transparent 55%);
+      animation: pulseSky 6s ease-in-out infinite;
+    }
+
+    @keyframes drift {
+      from { transform: translateY(-12px); }
+      to { transform: translateY(12px); }
+    }
+
+    @keyframes pulseSky {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 0.8; }
+    }
+
+    .app {
+      position: relative;
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: var(--space-6);
+    }
+
+    .skip-link {
+      position: absolute;
+      left: -9999px;
+      top: 0;
+      background: #fff;
+      color: #000;
+      padding: 10px 14px;
+      border-radius: 10px;
+      z-index: 20;
+    }
+
+    .skip-link:focus {
+      left: 12px;
+      top: 12px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: var(--space-6);
+      align-items: center;
+      margin-bottom: var(--space-6);
+    }
+
+    .card {
+      background: var(--panel);
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(255,255,255,0.55);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+    }
+
+    .intro {
+      padding: clamp(20px, 4vw, 36px);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: #fff5cc;
+      color: #8a6200;
+      font-weight: 800;
+      font-size: clamp(12px, 2vw, 15px);
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(2rem, 5vw, 3.7rem);
+      line-height: 1.05;
+    }
+
+    .intro p {
+      margin: 0;
+      max-width: 34ch;
+      font-size: clamp(1rem, 2.2vw, 1.2rem);
+      line-height: 1.55;
+      color: var(--muted);
+    }
+
+    .mini-mission {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .chip {
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(79,124,255,0.1);
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    .logo-box {
+      position: relative;
+      min-height: 250px;
+      padding: 24px;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+    }
+
+    .logo-box svg {
+      width: min(100%, 360px);
+      filter: drop-shadow(0 10px 18px rgba(82,110,255,0.16));
+    }
+
+    .cloud {
+      position: absolute;
+      background: rgba(255,255,255,0.78);
+      border-radius: 999px;
+      filter: blur(1px);
+      animation: floatCloud 8s ease-in-out infinite;
+    }
+
+    .cloud::before,
+    .cloud::after {
+      content: "";
+      position: absolute;
+      background: inherit;
+      border-radius: inherit;
+    }
+
+    .cloud.one { width: 92px; height: 34px; left: 10%; top: 16%; }
+    .cloud.one::before { width: 34px; height: 34px; left: 10px; top: -14px; }
+    .cloud.one::after { width: 42px; height: 42px; right: 12px; top: -18px; }
+    .cloud.two { width: 120px; height: 40px; right: 10%; bottom: 16%; animation-delay: -2s; }
+    .cloud.two::before { width: 40px; height: 40px; left: 16px; top: -16px; }
+    .cloud.two::after { width: 48px; height: 48px; right: 16px; top: -20px; }
+
+    @keyframes floatCloud {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 390px 1fr;
+      gap: var(--space-6);
+      align-items: start;
+    }
+
+    .controls,
+    .visual-panel {
+      padding: clamp(18px, 3vw, 28px);
+    }
+
+    .section-title {
+      font-size: clamp(1.35rem, 3vw, 1.8rem);
+      margin: 0 0 14px;
+    }
+
+    .helper {
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.45;
+    }
+
+    .input-group {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    label {
+      font-weight: 800;
+      font-size: 1rem;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      min-height: 58px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      border: 2px solid #cfe0ff;
+      background: #fff;
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    input[type="number"]:focus-visible,
+    button:focus-visible,
+    input[type="checkbox"]:focus-visible + .audio-switch {
+      outline: 3px solid #113dff;
+      outline-offset: 3px;
+    }
+
+    .presets {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .preset-btn,
+    .control-btn {
+      min-height: 54px;
+      border-radius: 18px;
+      font-weight: 900;
+      font-size: 1rem;
+      padding: 14px 18px;
+      border: none;
+    }
+
+    .preset-btn {
+      background: #edf3ff;
+      color: var(--primary);
+      flex: 1 1 90px;
+    }
+
+    .preset-btn.active {
+      background: var(--primary);
+      color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(79,124,255,0.24);
+    }
+
+    .control-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .control-btn {
+      color: #fff;
+      box-shadow: 0 12px 20px rgba(0,0,0,0.1);
+      transition: transform 180ms ease, filter 180ms ease;
+    }
+
+    .control-btn:hover,
+    .preset-btn:hover,
+    .sound-btn:hover { transform: translateY(-2px); filter: brightness(1.03); }
+    .control-btn:active,
+    .preset-btn:active,
+    .sound-btn:active { transform: translateY(1px) scale(0.99); }
+
+    .start { background: linear-gradient(135deg, #4f7cff, #7a5cff); }
+    .pause { background: linear-gradient(135deg, #ff9f1c, #ffbf69); color: #5a3600; }
+    .resume { background: linear-gradient(135deg, #21b66f, #60d394); }
+    .reset { background: linear-gradient(135deg, #ff6b6b, #ff8fab); }
+
+    .audio-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: #f6f9ff;
+      margin-bottom: 16px;
+    }
+
+    .audio-label {
+      font-weight: 800;
+    }
+
+    .audio-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .audio-control input { position: absolute; opacity: 0; pointer-events: none; }
+
+    .audio-switch {
+      width: 68px;
+      height: 38px;
+      background: #d8e6ff;
+      border-radius: 999px;
+      position: relative;
+      display: inline-block;
+      transition: background 180ms ease;
+    }
+
+    .audio-switch::after {
+      content: "";
+      position: absolute;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #fff;
+      top: 5px;
+      left: 5px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.18);
+      transition: transform 180ms ease;
+    }
+
+    .audio-control input:checked + .audio-switch {
+      background: #9ee6bc;
+    }
+
+    .audio-control input:checked + .audio-switch::after {
+      transform: translateX(30px);
+    }
+
+    .task-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .task-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #fff;
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 2px solid #eef4ff;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .task-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ffd166, #ff7eb6);
+      flex: 0 0 auto;
+    }
+
+    .visual-panel {
+      display: grid;
+      gap: 20px;
+      overflow: hidden;
+    }
+
+    .timer-top {
+      display: grid;
+      grid-template-columns: minmax(240px, 320px) 1fr;
+      gap: 22px;
+      align-items: center;
+    }
+
+    .circle-wrap {
+      position: relative;
+      width: min(100%, 290px);
+      aspect-ratio: 1;
+      margin: 0 auto;
+    }
+
+    .circle-wrap svg { width: 100%; height: 100%; }
+
+    .circle-bg { stroke: #dbe9ff; stroke-width: 16; fill: none; }
+    .circle-progress {
+      stroke: url(#progressGradient);
+      stroke-width: 16;
+      fill: none;
+      stroke-linecap: round;
+      transform: rotate(-90deg);
+      transform-origin: 50% 50%;
+      stroke-dasharray: 565.48;
+      stroke-dashoffset: 565.48;
+      transition: stroke-dashoffset 0.4s linear;
+      filter: drop-shadow(0 8px 12px rgba(94,86,255,0.2));
+    }
+
+    .time-center {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 24px;
+    }
+
+    .time-left {
+      font-size: clamp(2.3rem, 7vw, 4.6rem);
+      line-height: 0.95;
+      font-weight: 900;
+      letter-spacing: -1px;
+    }
+
+    .time-sub {
+      font-size: clamp(0.95rem, 2vw, 1.1rem);
+      color: var(--muted);
+      font-weight: 800;
+      margin-top: 8px;
+    }
+
+    .mission-box {
+      display: grid;
+      gap: 16px;
+      align-content: center;
+    }
+
+    .status-pill {
+      justify-self: start;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: #eef4ff;
+      color: var(--primary);
+      font-weight: 900;
+      font-size: 0.95rem;
+    }
+
+    .status-text {
+      font-size: clamp(1.2rem, 2.8vw, 1.9rem);
+      font-weight: 900;
+      line-height: 1.15;
+      margin: 0;
+    }
+
+    .sub-status {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+
+    .progress-area {
+      display: grid;
+      gap: 10px;
+    }
+
+    .progress-labels {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      color: var(--muted);
+      font-weight: 800;
+      font-size: 0.95rem;
+    }
+
+    .progress-track {
+      position: relative;
+      height: 28px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #deebff, #cfe1ff);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 0%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #66d1ff 0%, #7a7cff 40%, #c96bff 100%);
+      transition: width 0.35s linear;
+    }
+
+    .milestones {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .milestone-line {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: rgba(255,255,255,0.7);
+      transform: translateX(-50%);
+    }
+
+    .milestone-markers {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .milestone {
+      display: grid;
+      justify-items: center;
+      gap: 8px;
+      text-align: center;
+      color: var(--muted);
+      font-weight: 800;
+      font-size: 0.88rem;
+    }
+
+    .star {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: #eff4ff;
+      color: #9ab0d8;
+      transition: transform 200ms ease, background 200ms ease, color 200ms ease, box-shadow 200ms ease;
+      font-size: 1.2rem;
+    }
+
+    .milestone.active .star {
+      background: linear-gradient(135deg, #ffd166, #ff8fab);
+      color: #fff;
+      transform: scale(1.12) rotate(8deg);
+      box-shadow: 0 10px 18px rgba(255, 143, 171, 0.28);
+    }
+
+    .play-scene {
+      position: relative;
+      min-height: 280px;
+      padding: 24px 18px 64px;
+      border-radius: 24px;
+      background:
+        linear-gradient(180deg, #dff5ff 0%, #edf7ff 55%, #f6fbff 100%);
+      overflow: hidden;
+    }
+
+    .rainbow {
+      position: absolute;
+      left: 50%;
+      top: 24px;
+      transform: translateX(-50%);
+      width: min(75%, 520px);
+      height: 170px;
+      border-radius: 999px 999px 0 0;
+      overflow: hidden;
+      opacity: 0.38;
+    }
+
+    .rainbow::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 50% 100%, transparent 0 44%, #ff6b6b 44% 51%, #ffb703 51% 58%, #7bd389 58% 65%, #6cc7ff 65% 72%, #8b7dff 72% 79%, transparent 79%);
+    }
+
+    .destination {
+      position: absolute;
+      right: 22px;
+      top: 46px;
+      width: 120px;
+      display: grid;
+      justify-items: center;
+      gap: 6px;
+    }
+
+    .destination-label {
+      font-weight: 900;
+      color: var(--primary-2);
+      background: rgba(255,255,255,0.72);
+      padding: 8px 12px;
+      border-radius: 999px;
+    }
+
+    .finish-planet {
+      width: 92px;
+      height: 92px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #fff6a6, #ffcc53 58%, #f59f00 100%);
+      box-shadow: 0 0 0 12px rgba(255,255,255,0.34), 0 0 35px rgba(255,191,105,0.3);
+      position: relative;
+    }
+
+    .finish-planet::after {
+      content: "";
+      position: absolute;
+      width: 118px;
+      height: 24px;
+      border-radius: 999px;
+      border: 6px solid rgba(255,255,255,0.78);
+      left: -13px;
+      top: 34px;
+      transform: rotate(-9deg);
+    }
+
+    .path {
+      position: absolute;
+      left: 24px;
+      right: 110px;
+      bottom: 88px;
+      height: 8px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(125,180,255,0.2), rgba(125,180,255,0.38));
+      overflow: visible;
+    }
+
+    .path::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: -4px;
+      height: 16px;
+      width: 100%;
+      background: repeating-linear-gradient(90deg, rgba(255,255,255,0.75) 0 18px, transparent 18px 30px);
+      opacity: 0.6;
+      border-radius: inherit;
+    }
+
+    .rocket {
+      position: absolute;
+      left: 0;
+      bottom: 54px;
+      width: 112px;
+      transform: translateX(0);
+      transition: transform 0.35s linear;
+      filter: drop-shadow(0 10px 14px rgba(79,124,255,0.18));
+    }
+
+    .rocket svg { width: 100%; }
+
+    .flame {
+      transform-origin: center;
+      animation: flamePulse 0.35s infinite alternate;
+    }
+
+    @keyframes flamePulse {
+      from { transform: scaleY(0.85); opacity: 0.72; }
+      to { transform: scaleY(1.14); opacity: 1; }
+    }
+
+    .sparkles {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .sparkle {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.95) 0 25%, rgba(255,209,102,0.95) 28% 52%, transparent 54%);
+      animation: twinkle 2.6s ease-in-out infinite;
+    }
+
+    .sparkle:nth-child(1) { left: 10%; top: 22%; }
+    .sparkle:nth-child(2) { left: 26%; top: 12%; animation-delay: -0.7s; }
+    .sparkle:nth-child(3) { left: 44%; top: 24%; animation-delay: -1.3s; }
+    .sparkle:nth-child(4) { left: 66%; top: 18%; animation-delay: -1.9s; }
+    .sparkle:nth-child(5) { left: 82%; top: 28%; animation-delay: -0.4s; }
+
+    @keyframes twinkle {
+      0%, 100% { transform: scale(0.7); opacity: 0.55; }
+      50% { transform: scale(1.14); opacity: 1; }
+    }
+
+    .scene-footer {
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .scene-note,
+    .goal-note {
+      background: rgba(255,255,255,0.8);
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-weight: 800;
+      color: var(--muted);
+    }
+
+    .finish-message {
+      display: none;
+      text-align: center;
+      padding: 18px 16px;
+      border-radius: 22px;
+      background: linear-gradient(135deg, #fff4b5, #ffd6e7);
+      color: #7a3d00;
+      font-weight: 900;
+      font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,0.45);
+    }
+
+    .finish-message.show {
+      display: block;
+      animation: celebrate 0.5s ease;
+    }
+
+    @keyframes celebrate {
+      from { transform: scale(0.92); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .footer-note {
+      margin-top: 18px;
+      font-size: 0.95rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 980px) {
+      .hero,
+      .layout,
+      .timer-top {
+        grid-template-columns: 1fr;
+      }
+
+      .logo-box { min-height: 210px; }
+      .destination { position: static; margin-left: auto; }
+      .path { right: 36px; }
+    }
+
+    @media (max-width: 640px) {
+      .app { padding: 14px; }
+      .control-grid { grid-template-columns: 1fr; }
+      .progress-labels { font-size: 0.85rem; }
+      .milestone-markers { grid-template-columns: repeat(2, 1fr); row-gap: 14px; }
+      .play-scene { min-height: 320px; padding-inline: 14px; }
+      .rocket { width: 92px; }
+      .scene-footer { justify-content: center; }
+      .audio-row { align-items: flex-start; flex-direction: column; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="stars-bg" aria-hidden="true"></div>
+  <a href="#conteudo" class="skip-link">Pular para o conteúdo</a>
+
+  <main class="app" id="conteudo">
+    <section class="hero" aria-label="Introdução do timer mágico">
+      <div class="card intro">
+        <div class="badge" aria-hidden="true">⭐ Missão do tempo</div>
+        <h1>Timer Mágico Infantil</h1>
+        <p>Ajude a criança a ver o tempo passando como uma pequena aventura. O foguete viaja até a estrela final enquanto o relógio mostra cada pedacinho da missão.</p>
+        <div class="mini-mission" aria-label="Sugestões de uso">
+          <span class="chip">Escovar os dentes</span>
+          <span class="chip">Guardar brinquedos</span>
+          <span class="chip">Estudar</span>
+          <span class="chip">Esperar para sair</span>
+        </div>
+      </div>
+
+      <div class="card logo-box" aria-hidden="true">
+        <div class="cloud one"></div>
+        <div class="cloud two"></div>
+        <svg viewBox="0 0 420 280" role="img" aria-label="Ilustração de foguete alegre">
+          <defs>
+            <linearGradient id="shipBody" x1="0" x2="1">
+              <stop offset="0%" stop-color="#ffffff"/>
+              <stop offset="100%" stop-color="#dce7ff"/>
+            </linearGradient>
+            <linearGradient id="shipWing" x1="0" x2="1">
+              <stop offset="0%" stop-color="#ff8fab"/>
+              <stop offset="100%" stop-color="#ff6b6b"/>
+            </linearGradient>
+            <linearGradient id="shipTop" x1="0" x2="1">
+              <stop offset="0%" stop-color="#7a7cff"/>
+              <stop offset="100%" stop-color="#4f7cff"/>
+            </linearGradient>
+          </defs>
+          <circle cx="320" cy="70" r="26" fill="#ffe58f" opacity="0.8"/>
+          <circle cx="92" cy="58" r="10" fill="#ffd166" opacity="0.8"/>
+          <circle cx="66" cy="86" r="6" fill="#ff9f1c" opacity="0.7"/>
+          <g transform="translate(70 46) rotate(-8 150 90)">
+            <ellipse cx="180" cy="100" rx="98" ry="62" fill="url(#shipBody)" stroke="#8ea9ff" stroke-width="6"/>
+            <path d="M262 101c0-38-26-69-66-88 10 28 10 148 0 176 40-18 66-49 66-88z" fill="url(#shipTop)" stroke="#6d86f8" stroke-width="6"/>
+            <circle cx="146" cy="100" r="26" fill="#9fe8ff" stroke="#4f7cff" stroke-width="6"/>
+            <path d="M112 141l-58 42c-10 7-5 22 8 22h52z" fill="url(#shipWing)" stroke="#ff6b6b" stroke-width="6"/>
+            <path d="M113 58L54 16c-10-7-24 4-18 16l24 48z" fill="#ffb703" stroke="#ff9f1c" stroke-width="6"/>
+            <path d="M80 91l-52 9 40 20z" fill="#7bd389" stroke="#33a35c" stroke-width="6"/>
+            <path d="M34 102c-22 8-33 25-34 41 28 2 48-7 62-22z" fill="#ffd166"/>
+            <path d="M28 146c24 2 42-7 56-20-14 3-33-1-56-20-10 12-12 27 0 40z" fill="#ff7eb6" opacity="0.86"/>
+            <circle cx="280" cy="100" r="7" fill="#fff" opacity="0.8"/>
+          </g>
+          <path d="M30 224c42-18 72-18 114 0s72 18 114 0 72-18 114 0" fill="none" stroke="#d3ebff" stroke-width="16" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </section>
+
+    <section class="layout" aria-label="Timer visual infantil">
+      <aside class="card controls">
+        <h2 class="section-title">Escolha o tempo</h2>
+        <p class="helper">Digite os minutos ou toque em um tempo rápido para começar a missão.</p>
+
+        <div class="input-group">
+          <label for="minutesInput">Tempo em minutos</label>
+          <input id="minutesInput" type="number" min="1" max="180" step="1" value="10" inputmode="numeric" aria-describedby="minutesHint" />
+          <div id="minutesHint" class="helper" style="margin:0; font-size:0.95rem;">Exemplo: 2 para escovar os dentes, 10 para estudo curto, 15 para organizar brinquedos.</div>
+        </div>
+
+        <div class="presets" aria-label="Tempos rápidos">
+          <button class="preset-btn" data-minutes="2" type="button">2 min</button>
+          <button class="preset-btn" data-minutes="5" type="button">5 min</button>
+          <button class="preset-btn active" data-minutes="10" type="button">10 min</button>
+          <button class="preset-btn" data-minutes="15" type="button">15 min</button>
+        </div>
+
+        <div class="control-grid" aria-label="Controles do timer">
+          <button class="control-btn start" id="startBtn" type="button">Iniciar</button>
+          <button class="control-btn pause" id="pauseBtn" type="button">Pausar</button>
+          <button class="control-btn resume" id="resumeBtn" type="button">Retomar</button>
+          <button class="control-btn reset" id="resetBtn" type="button">Reiniciar</button>
+        </div>
+
+        <div class="audio-row">
+          <div>
+            <div class="audio-label">Som no final</div>
+            <div class="helper" style="margin:6px 0 0; font-size:0.92rem;">Ative para tocar um som alegre quando a missão terminar.</div>
+          </div>
+          <label class="audio-control">
+            <span class="sr-only">Ativar ou desativar áudio final</span>
+            <input type="checkbox" id="soundToggle" checked />
+            <span class="audio-switch" aria-hidden="true"></span>
+          </label>
+        </div>
+
+        <div class="task-list" aria-label="Ideias de missões">
+          <div class="task-item"><span class="task-dot"></span>Missão sorriso: escovar os dentes.</div>
+          <div class="task-item"><span class="task-dot"></span>Missão quarto legal: guardar brinquedos.</div>
+          <div class="task-item"><span class="task-dot"></span>Missão foco: estudar por alguns minutos.</div>
+          <div class="task-item"><span class="task-dot"></span>Missão paciência: esperar a hora de sair.</div>
+        </div>
+      </aside>
+
+      <section class="card visual-panel" aria-label="Área visual do timer">
+        <div class="timer-top">
+          <div class="circle-wrap" aria-hidden="true">
+            <svg viewBox="0 0 220 220">
+              <defs>
+                <linearGradient id="progressGradient" x1="0" x2="1">
+                  <stop offset="0%" stop-color="#66d1ff"></stop>
+                  <stop offset="50%" stop-color="#6c7cff"></stop>
+                  <stop offset="100%" stop-color="#d76bff"></stop>
+                </linearGradient>
+              </defs>
+              <circle class="circle-bg" cx="110" cy="110" r="90"></circle>
+              <circle class="circle-progress" id="circleProgress" cx="110" cy="110" r="90"></circle>
+            </svg>
+            <div class="time-center">
+              <div>
+                <div class="time-left" id="timeRemaining" aria-live="polite">10:00</div>
+                <div class="time-sub">tempo restante</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mission-box">
+            <div class="status-pill" id="statusPill">Pronto para decolar</div>
+            <p class="status-text" id="statusText">Vamos iniciar uma missão do tempo?</p>
+            <p class="sub-status" id="statusHint">Quando o timer começar, o foguete vai avançar até o planeta dourado e as estrelas vão acender em cada marco especial.</p>
+
+            <div class="progress-area" aria-label="Progresso do tempo">
+              <div class="progress-labels">
+                <span>Começo</span>
+                <span id="progressPercent">0% completo</span>
+                <span>Chegada</span>
+              </div>
+              <div class="progress-track">
+                <div class="progress-fill" id="progressFill"></div>
+                <div class="milestones" aria-hidden="true">
+                  <span class="milestone-line" style="left:25%"></span>
+                  <span class="milestone-line" style="left:50%"></span>
+                  <span class="milestone-line" style="left:75%"></span>
+                  <span class="milestone-line" style="left:100%"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="milestone-markers" aria-label="Marcos do tempo">
+          <div class="milestone" id="m25"><div class="star">★</div><div>25%</div></div>
+          <div class="milestone" id="m50"><div class="star">★</div><div>50%</div></div>
+          <div class="milestone" id="m75"><div class="star">★</div><div>75%</div></div>
+          <div class="milestone" id="m100"><div class="star">★</div><div>100%</div></div>
+        </div>
+
+        <div class="play-scene" aria-label="Cena lúdica da missão">
+          <div class="rainbow" aria-hidden="true"></div>
+          <div class="sparkles" aria-hidden="true">
+            <div class="sparkle"></div>
+            <div class="sparkle"></div>
+            <div class="sparkle"></div>
+            <div class="sparkle"></div>
+            <div class="sparkle"></div>
+          </div>
+
+          <div class="destination">
+            <div class="destination-label">Destino final</div>
+            <div class="finish-planet"></div>
+          </div>
+
+          <div class="path"></div>
+
+          <div class="rocket" id="rocket" aria-hidden="true">
+            <svg viewBox="0 0 170 108">
+              <defs>
+                <linearGradient id="rocketBodyGrad" x1="0" x2="1">
+                  <stop offset="0%" stop-color="#ffffff"/>
+                  <stop offset="100%" stop-color="#dfe8ff"/>
+                </linearGradient>
+                <linearGradient id="rocketHeadGrad" x1="0" x2="1">
+                  <stop offset="0%" stop-color="#7b7dff"/>
+                  <stop offset="100%" stop-color="#4f7cff"/>
+                </linearGradient>
+              </defs>
+              <g transform="translate(10 6)">
+                <ellipse cx="82" cy="48" rx="58" ry="34" fill="url(#rocketBodyGrad)" stroke="#87a2ff" stroke-width="5"/>
+                <path d="M133 48c0-21-14-40-39-54 6 17 6 91 0 108 25-14 39-33 39-54z" fill="url(#rocketHeadGrad)" stroke="#7086ff" stroke-width="5"/>
+                <circle cx="67" cy="48" r="15" fill="#9fe9ff" stroke="#4f7cff" stroke-width="5"/>
+                <path d="M46 71L14 96c-6 5-3 14 5 14h31z" fill="#ff8fab" stroke="#ff6b6b" stroke-width="5"/>
+                <path d="M47 25L14 1C8-3 0 3 3 10l14 28z" fill="#ffd166" stroke="#ffb703" stroke-width="5"/>
+                <g class="flame">
+                  <path d="M8 50c-15 5-23 17-24 28 19 2 34-4 46-14z" fill="#ffd166"/>
+                  <path d="M5 79c18 1 31-5 42-14-10 2-24-1-42-13C-2 60-4 70 5 79z" fill="#ff7eb6" opacity="0.9"/>
+                </g>
+              </g>
+            </svg>
+          </div>
+
+          <div class="scene-footer">
+            <div class="scene-note" id="sceneNote">O foguete está esperando o início.</div>
+            <div class="goal-note" id="goalNote">Acenda 4 estrelas mágicas</div>
+          </div>
+        </div>
+
+        <div class="finish-message" id="finishMessage" role="status" aria-live="assertive">Parabéns! O tempo terminou! Missão concluída com sucesso! 🎉</div>
+      </section>
+    </section>
+
+    <p class="footer-note">Dica: em celular, use a tela na vertical; em computador, a página aproveita melhor o espaço para mostrar toda a missão.</p>
+  </main>
+
+  <script>
+    // Elementos principais do timer
+    const minutesInput = document.getElementById('minutesInput');
+    const startBtn = document.getElementById('startBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const resumeBtn = document.getElementById('resumeBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const soundToggle = document.getElementById('soundToggle');
+    const timeRemaining = document.getElementById('timeRemaining');
+    const progressFill = document.getElementById('progressFill');
+    const progressPercent = document.getElementById('progressPercent');
+    const circleProgress = document.getElementById('circleProgress');
+    const rocket = document.getElementById('rocket');
+    const statusPill = document.getElementById('statusPill');
+    const statusText = document.getElementById('statusText');
+    const statusHint = document.getElementById('statusHint');
+    const sceneNote = document.getElementById('sceneNote');
+    const goalNote = document.getElementById('goalNote');
+    const finishMessage = document.getElementById('finishMessage');
+    const presetButtons = Array.from(document.querySelectorAll('.preset-btn'));
+    const milestoneEls = {
+      25: document.getElementById('m25'),
+      50: document.getElementById('m50'),
+      75: document.getElementById('m75'),
+      100: document.getElementById('m100')
+    };
+
+    const CIRCLE_LENGTH = 2 * Math.PI * 90;
+    let totalSeconds = parseMinutes(minutesInput.value) * 60;
+    let remainingSeconds = totalSeconds;
+    let timerId = null;
+    let endTime = null;
+    let running = false;
+    let paused = false;
+
+    function parseMinutes(value) {
+      const num = Math.max(1, Math.min(180, Number(value) || 1));
+      return Math.round(num);
+    }
+
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    function setPresetActive(mins) {
+      presetButtons.forEach(btn => {
+        btn.classList.toggle('active', Number(btn.dataset.minutes) === mins);
+      });
+    }
+
+    function getProgress() {
+      if (!totalSeconds) return 0;
+      return Math.min(1, Math.max(0, (totalSeconds - remainingSeconds) / totalSeconds));
+    }
+
+    function updateMilestones(progress) {
+      [25, 50, 75, 100].forEach(mark => {
+        milestoneEls[mark].classList.toggle('active', progress >= mark / 100);
+      });
+    }
+
+    function updateStatus(progress) {
+      if (!running && !paused && progress === 0) {
+        statusPill.textContent = 'Pronto para decolar';
+        statusText.textContent = 'Vamos iniciar uma missão do tempo?';
+        statusHint.textContent = 'Quando o timer começar, o foguete vai avançar até o planeta dourado e as estrelas vão acender em cada marco especial.';
+        sceneNote.textContent = 'O foguete está esperando o início.';
+        goalNote.textContent = 'Acenda 4 estrelas mágicas';
+        return;
+      }
+
+      if (paused) {
+        statusPill.textContent = 'Missão pausada';
+        statusText.textContent = 'O foguete está descansando um pouquinho.';
+        statusHint.textContent = 'Quando você tocar em retomar, a aventura continua do ponto em que parou.';
+        sceneNote.textContent = 'Pausa rápida para respirar.';
+        goalNote.textContent = 'A missão continua já já';
+        return;
+      }
+
+      if (progress >= 1) {
+        statusPill.textContent = 'Missão completa';
+        statusText.textContent = 'Chegamos ao planeta dourado!';
+        statusHint.textContent = 'Todas as estrelas acenderam e o tempo chegou ao final.';
+        sceneNote.textContent = 'Parabéns! Você chegou ao destino final.';
+        goalNote.textContent = '4 estrelas conquistadas';
+        return;
+      }
+
+      if (progress < 0.25) {
+        statusPill.textContent = 'Missão começou';
+        statusText.textContent = 'O foguete acabou de sair da base!';
+        statusHint.textContent = 'Estamos no início da aventura. Continue firme para ganhar a primeira estrela.';
+        sceneNote.textContent = 'Subindo com energia!';
+        goalNote.textContent = 'Próxima estrela em 25%';
+      } else if (progress < 0.5) {
+        statusPill.textContent = 'Primeira estrela';
+        statusText.textContent = 'Muito bem! Uma estrela mágica já brilhou.';
+        statusHint.textContent = 'A missão está andando direitinho. Falta pouco para chegar ao meio do caminho.';
+        sceneNote.textContent = 'Você está indo super bem!';
+        goalNote.textContent = 'Próxima estrela em 50%';
+      } else if (progress < 0.75) {
+        statusPill.textContent = 'Metade da missão';
+        statusText.textContent = 'Uau! Já passamos da metade do caminho.';
+        statusHint.textContent = 'Agora o destino parece mais perto. Continue com foco e calma.';
+        sceneNote.textContent = 'Metade completa!';
+        goalNote.textContent = 'Próxima estrela em 75%';
+      } else {
+        statusPill.textContent = 'Quase chegando';
+        statusText.textContent = 'Só falta um pedacinho para terminar!';
+        statusHint.textContent = 'O foguete está quase encostando no planeta dourado. Últimos instantes da missão.';
+        sceneNote.textContent = 'Reta final da aventura!';
+        goalNote.textContent = 'Destino muito próximo';
+      }
+    }
+
+    function updateVisuals() {
+      const progress = getProgress();
+      const percent = Math.round(progress * 100);
+      timeRemaining.textContent = formatTime(remainingSeconds);
+      progressFill.style.width = `${percent}%`;
+      progressPercent.textContent = `${percent}% completo`;
+      circleProgress.style.strokeDasharray = CIRCLE_LENGTH;
+      circleProgress.style.strokeDashoffset = CIRCLE_LENGTH * (1 - progress);
+      const travelWidth = Math.max(0, document.querySelector('.path').offsetWidth - rocket.offsetWidth + 72);
+      rocket.style.transform = `translateX(${travelWidth * progress}px)`;
+      updateMilestones(progress);
+      updateStatus(progress);
+    }
+
+    function stopTimer() {
+      if (timerId) {
+        clearInterval(timerId);
+        timerId = null;
+      }
+      running = false;
+    }
+
+    function beepEnd() {
+      if (!soundToggle.checked) return;
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) return;
+      const context = new AudioContextClass();
+      const now = context.currentTime;
+      [0, 0.22, 0.44].forEach((start, index) => {
+        const osc = context.createOscillator();
+        const gain = context.createGain();
+        osc.type = index === 2 ? 'triangle' : 'sine';
+        osc.frequency.value = [660, 880, 1046][index];
+        gain.gain.setValueAtTime(0.0001, now + start);
+        gain.gain.exponentialRampToValueAtTime(0.18, now + start + 0.03);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + start + 0.2);
+        osc.connect(gain).connect(context.destination);
+        osc.start(now + start);
+        osc.stop(now + start + 0.22);
+      });
+      setTimeout(() => context.close().catch(() => {}), 1200);
+    }
+
+    function completeTimer() {
+      remainingSeconds = 0;
+      stopTimer();
+      paused = false;
+      finishMessage.classList.add('show');
+      updateVisuals();
+      beepEnd();
+    }
+
+    function tick() {
+      const secondsLeft = Math.max(0, Math.round((endTime - Date.now()) / 1000));
+      remainingSeconds = secondsLeft;
+      updateVisuals();
+      if (secondsLeft <= 0) {
+        completeTimer();
+      }
+    }
+
+    function startTimer() {
+      const mins = parseMinutes(minutesInput.value);
+      minutesInput.value = mins;
+      totalSeconds = mins * 60;
+      remainingSeconds = totalSeconds;
+      paused = false;
+      finishMessage.classList.remove('show');
+      stopTimer();
+      running = true;
+      endTime = Date.now() + remainingSeconds * 1000;
+      updateVisuals();
+      timerId = setInterval(tick, 250);
+      setPresetActive(mins);
+    }
+
+    function pauseTimer() {
+      if (!running) return;
+      paused = true;
+      running = false;
+      clearInterval(timerId);
+      timerId = null;
+      remainingSeconds = Math.max(0, Math.round((endTime - Date.now()) / 1000));
+      updateVisuals();
+    }
+
+    function resumeTimer() {
+      if (!paused || remainingSeconds <= 0) return;
+      paused = false;
+      running = true;
+      finishMessage.classList.remove('show');
+      endTime = Date.now() + remainingSeconds * 1000;
+      updateVisuals();
+      timerId = setInterval(tick, 250);
+    }
+
+    function resetTimer() {
+      stopTimer();
+      paused = false;
+      totalSeconds = parseMinutes(minutesInput.value) * 60;
+      remainingSeconds = totalSeconds;
+      finishMessage.classList.remove('show');
+      updateVisuals();
+      setPresetActive(parseMinutes(minutesInput.value));
+    }
+
+    presetButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const mins = Number(btn.dataset.minutes);
+        minutesInput.value = mins;
+        setPresetActive(mins);
+        if (!running && !paused) {
+          totalSeconds = mins * 60;
+          remainingSeconds = totalSeconds;
+          finishMessage.classList.remove('show');
+          updateVisuals();
+        }
+      });
+    });
+
+    minutesInput.addEventListener('change', () => {
+      const mins = parseMinutes(minutesInput.value);
+      minutesInput.value = mins;
+      if (!running && !paused) {
+        totalSeconds = mins * 60;
+        remainingSeconds = totalSeconds;
+        finishMessage.classList.remove('show');
+        updateVisuals();
+      }
+      setPresetActive(mins);
+    });
+
+    startBtn.addEventListener('click', startTimer);
+    pauseBtn.addEventListener('click', pauseTimer);
+    resumeBtn.addEventListener('click', resumeTimer);
+    resetBtn.addEventListener('click', resetTimer);
+
+    // Estado inicial
+    updateVisuals();
+  </script>
+</body>
+</html>

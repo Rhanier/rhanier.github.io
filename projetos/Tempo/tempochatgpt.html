@@ -1,0 +1,468 @@
+```html
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Timer Mágico Infantil</title>
+
+<style>
+:root{
+  --azul:#69b7ff;
+  --roxo:#9d7cff;
+  --verde:#77dd77;
+  --amarelo:#ffd166;
+  --rosa:#ff8fab;
+  --fundo:#f3f8ff;
+  --texto:#24425c;
+}
+
+*{box-sizing:border-box;}
+
+body{
+  margin:0;
+  font-family:Arial, Helvetica, sans-serif;
+  background:linear-gradient(#dff4ff,#f9fbff);
+  color:var(--texto);
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:20px;
+}
+
+.container{
+  width:min(900px,100%);
+  background:white;
+  border-radius:30px;
+  padding:25px;
+  box-shadow:0 15px 40px rgba(0,0,0,.12);
+}
+
+h1{
+  text-align:center;
+  margin-top:0;
+  font-size:clamp(2rem,4vw,3rem);
+}
+
+.subtitle{
+  text-align:center;
+  font-size:1.1rem;
+  margin-bottom:25px;
+}
+
+.top{
+  display:flex;
+  flex-wrap:wrap;
+  gap:15px;
+  justify-content:center;
+  align-items:center;
+}
+
+input{
+  font-size:1.3rem;
+  padding:14px;
+  width:130px;
+  border-radius:18px;
+  border:3px solid var(--azul);
+  text-align:center;
+}
+
+button{
+  border:none;
+  border-radius:18px;
+  padding:15px 20px;
+  font-size:1.05rem;
+  cursor:pointer;
+  color:white;
+  font-weight:bold;
+  min-width:120px;
+  transition:.2s;
+}
+
+button:hover{
+  transform:scale(1.05);
+}
+
+.start{background:var(--verde);}
+.pause{background:var(--amarelo); color:#333;}
+.reset{background:var(--rosa);}
+.audio{background:var(--roxo);}
+
+.timer{
+  text-align:center;
+  font-size:clamp(3rem,10vw,5rem);
+  margin:30px 0 20px;
+  font-weight:bold;
+}
+
+.progress-area{
+  margin-top:20px;
+}
+
+.bar{
+  width:100%;
+  height:28px;
+  background:#e8eef6;
+  border-radius:30px;
+  overflow:hidden;
+}
+
+.fill{
+  width:0%;
+  height:100%;
+  background:linear-gradient(90deg,var(--verde),var(--azul));
+  transition:.5s;
+}
+
+.marks{
+  display:flex;
+  justify-content:space-between;
+  margin-top:10px;
+  font-weight:bold;
+}
+
+.marks span{
+  opacity:.4;
+  transition:.3s;
+}
+
+.marks span.active{
+  opacity:1;
+  transform:scale(1.15);
+  color:var(--roxo);
+}
+
+.mission{
+  margin-top:35px;
+  background:#eef8ff;
+  border-radius:30px;
+  padding:20px;
+}
+
+.sky{
+  position:relative;
+  height:180px;
+  overflow:hidden;
+}
+
+.path{
+  position:absolute;
+  left:40px;
+  right:40px;
+  top:85px;
+  height:10px;
+  background:#d8e4f3;
+  border-radius:10px;
+}
+
+.pathFill{
+  position:absolute;
+  left:40px;
+  top:85px;
+  height:10px;
+  width:0%;
+  background:linear-gradient(90deg,#ffd166,#ff8fab);
+  border-radius:10px;
+  transition:.5s;
+}
+
+.rocket{
+  position:absolute;
+  top:45px;
+  left:20px;
+  font-size:55px;
+  transition:.5s linear;
+}
+
+.destination{
+  position:absolute;
+  right:10px;
+  top:25px;
+  font-size:70px;
+}
+
+.star{
+  position:absolute;
+  font-size:30px;
+  opacity:.3;
+  transition:.5s;
+}
+
+.star.on{
+  opacity:1;
+  transform:scale(1.3);
+}
+
+.s1{left:20%;top:15px;}
+.s2{left:40%;top:120px;}
+.s3{left:60%;top:20px;}
+.s4{left:80%;top:115px;}
+
+.message{
+  margin-top:20px;
+  text-align:center;
+  font-size:1.5rem;
+  min-height:40px;
+  font-weight:bold;
+  color:#6d48ff;
+}
+
+.footer{
+  margin-top:20px;
+  text-align:center;
+  color:#567;
+}
+
+@media (max-width:650px){
+  button{
+    width:100%;
+  }
+
+  .top{
+    flex-direction:column;
+  }
+
+  input{
+    width:100%;
+  }
+
+  .rocket{
+    font-size:45px;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>✨ Timer Mágico ✨</h1>
+  <div class="subtitle">
+    Ajude o foguete a chegar até o planeta!
+  </div>
+
+  <div class="top">
+    <input id="minutes" type="number" min="1" value="5">
+    <button class="start" id="startBtn">▶ Iniciar</button>
+    <button class="pause" id="pauseBtn">⏸ Pausar</button>
+    <button class="pause" id="resumeBtn">⏵ Retomar</button>
+    <button class="reset" id="resetBtn">↺ Reiniciar</button>
+    <button class="audio" id="audioBtn">🔊 Som ligado</button>
+  </div>
+
+  <div class="timer" id="timer">05:00</div>
+
+  <div class="progress-area">
+    <div class="bar">
+      <div class="fill" id="fill"></div>
+    </div>
+
+    <div class="marks">
+      <span id="m25">25%</span>
+      <span id="m50">50%</span>
+      <span id="m75">75%</span>
+      <span id="m100">100%</span>
+    </div>
+  </div>
+
+  <div class="mission">
+    <div class="sky">
+      <div class="path"></div>
+      <div class="pathFill" id="pathFill"></div>
+
+      <div class="star s1">⭐</div>
+      <div class="star s2">⭐</div>
+      <div class="star s3">⭐</div>
+      <div class="star s4">⭐</div>
+
+      <div class="rocket" id="rocket">🚀</div>
+      <div class="destination">🪐</div>
+    </div>
+
+    <div class="message" id="message">
+      Prepare-se para a missão!
+    </div>
+  </div>
+
+  <div class="footer">
+    Cada estrela mostra que você está chegando mais perto do objetivo.
+  </div>
+</div>
+
+<script>
+// Elementos
+const timerEl = document.getElementById("timer");
+const fill = document.getElementById("fill");
+const pathFill = document.getElementById("pathFill");
+const rocket = document.getElementById("rocket");
+const message = document.getElementById("message");
+const stars = document.querySelectorAll(".star");
+
+let totalSeconds = 300;
+let remaining = totalSeconds;
+let interval = null;
+let soundEnabled = true;
+
+// Atualiza relógio
+function updateDisplay(){
+  const min = Math.floor(remaining/60);
+  const sec = remaining%60;
+
+  timerEl.textContent =
+    String(min).padStart(2,"0") + ":" +
+    String(sec).padStart(2,"0");
+
+  const progress =
+    ((totalSeconds-remaining)/totalSeconds)*100;
+
+  fill.style.width = progress + "%";
+  pathFill.style.width = progress + "%";
+
+  const maxMove =
+    document.querySelector(".sky").offsetWidth - 120;
+
+  rocket.style.left =
+    20 + (maxMove * progress /100) + "px";
+
+  updateMilestones(progress);
+}
+
+// Atualiza marcos visuais
+function updateMilestones(progress){
+  const marks = [
+    [25,"m25",0],
+    [50,"m50",1],
+    [75,"m75",2],
+    [100,"m100",3]
+  ];
+
+  marks.forEach(([p,id,index])=>{
+    if(progress >= p){
+      document.getElementById(id)
+        .classList.add("active");
+
+      stars[index]
+        .classList.add("on");
+    }
+  });
+}
+
+// Som final
+function playSound(){
+  if(!soundEnabled) return;
+
+  const ctx = new AudioContext();
+
+  const osc = ctx.createOscillator();
+  osc.frequency.value = 700;
+  osc.connect(ctx.destination);
+  osc.start();
+  osc.stop(ctx.currentTime + 0.5);
+}
+
+// Iniciar
+document.getElementById("startBtn")
+.onclick = ()=>{
+
+  clearInterval(interval);
+
+  totalSeconds =
+    parseInt(document.getElementById("minutes").value || 1) * 60;
+
+  remaining = totalSeconds;
+
+  resetVisuals();
+  updateDisplay();
+
+  message.textContent =
+    "🚀 O foguete começou a viagem!";
+
+  interval = setInterval(()=>{
+    remaining--;
+
+    updateDisplay();
+
+    if(remaining <= 0){
+      clearInterval(interval);
+      remaining = 0;
+      updateDisplay();
+
+      message.textContent =
+        "🎉 Parabéns! O tempo terminou!";
+      playSound();
+    }
+
+  },1000);
+};
+
+// Pausar
+document.getElementById("pauseBtn")
+.onclick = ()=>{
+  clearInterval(interval);
+  message.textContent =
+    "⏸ Pausado. O foguete está descansando.";
+};
+
+// Retomar
+document.getElementById("resumeBtn")
+.onclick = ()=>{
+  clearInterval(interval);
+
+  interval = setInterval(()=>{
+    remaining--;
+
+    updateDisplay();
+
+    if(remaining <= 0){
+      clearInterval(interval);
+      remaining = 0;
+      updateDisplay();
+      message.textContent =
+        "🎉 Parabéns! O tempo terminou!";
+      playSound();
+    }
+
+  },1000);
+
+  message.textContent =
+    "🚀 O foguete voltou a viajar!";
+};
+
+// Reiniciar
+document.getElementById("resetBtn")
+.onclick = ()=>{
+  clearInterval(interval);
+  remaining = totalSeconds;
+  resetVisuals();
+  updateDisplay();
+  message.textContent =
+    "✨ Nova missão pronta!";
+};
+
+// Liga/desliga áudio
+document.getElementById("audioBtn")
+.onclick = function(){
+  soundEnabled = !soundEnabled;
+  this.textContent =
+    soundEnabled ?
+    "🔊 Som ligado" :
+    "🔇 Som desligado";
+};
+
+// Reinicia visuais
+function resetVisuals(){
+  document.querySelectorAll(".active")
+    .forEach(e=>e.classList.remove("active"));
+
+  stars.forEach(s=>s.classList.remove("on"));
+
+  fill.style.width = "0%";
+  pathFill.style.width = "0%";
+  rocket.style.left = "20px";
+}
+
+updateDisplay();
+</script>
+
+</body>
+</html>
