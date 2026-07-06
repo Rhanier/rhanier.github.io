@@ -111,7 +111,11 @@
     }
 
     .hero {
-      display: none;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: var(--space-6);
+      align-items: center;
+      margin-bottom: var(--space-6);
     }
 
     .card {
@@ -773,36 +777,26 @@
     }
 
     @media (max-width: 980px) {
+      .hero,
       .layout,
       .timer-top {
         grid-template-columns: 1fr;
       }
 
+      .logo-box { min-height: 210px; }
       .destination { position: static; margin-left: auto; }
       .path { right: 36px; }
     }
 
     @media (max-width: 640px) {
-      .app { padding: 12px; }
-      .controls,
-      .visual-panel { padding: 16px; border-radius: 22px; }
+      .app { padding: 14px; }
       .control-grid { grid-template-columns: 1fr; }
-      .preset-btn,
-      .control-btn { width: 100%; min-height: 56px; }
       .progress-labels { font-size: 0.85rem; }
       .milestone-markers { grid-template-columns: repeat(2, 1fr); row-gap: 14px; }
-      .play-scene { min-height: 320px; padding-inline: 12px; padding-top: 18px; }
-      .rocket { width: 84px; }
+      .play-scene { min-height: 320px; padding-inline: 14px; }
+      .rocket { width: 92px; }
       .scene-footer { justify-content: center; }
       .audio-row { align-items: flex-start; flex-direction: column; }
-      .section-title { font-size: 1.8rem; }
-      .time-left { font-size: clamp(2.2rem, 12vw, 3.4rem); }
-      .status-text { font-size: 1.5rem; }
-      .destination { width: 96px; gap: 4px; }
-      .finish-planet { width: 74px; height: 74px; }
-      .finish-planet::after { width: 96px; left: -11px; top: 26px; }
-      .path { left: 16px; right: 18px; bottom: 88px; }
-      .scene-note, .goal-note { font-size: 0.88rem; text-align: center; }
     }
 
     @media (prefers-reduced-motion: reduce) {
